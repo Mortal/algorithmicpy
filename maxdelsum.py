@@ -29,7 +29,10 @@ def maxdelsum_2d(A):
             for j in range(0, m):
                 s[j] += A[i2][j]
             # s[j] == A[i1][j] + A[i1 + 1][j] + ... + A[i2][j]
+            r"bla"
             # Solve 1d subproblem [s[0], s[1], ..., s[m-1]]
             max1d = maxdelsum_kadane(s)
             maxsofar = max(maxsofar, max1d)
     return maxsofar
+
+print(maxdelsum_2d(A))
