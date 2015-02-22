@@ -180,7 +180,7 @@ class Visitor(ast.NodeVisitor):
                     if j > 0:
                         print('&', end=' ')
                     if isinstance(cell, ast.Num):
-                        print(r'\phantom{-}')
+                        print(r'\phantom{-}', end='')
                     self.visit(cell)
                 print(r'\\')
             print(r'\end{pmatrix}')
