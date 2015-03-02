@@ -1,9 +1,13 @@
 import re
 import ast
+import sys
 import argparse
 
 
 class Visitor(ast.NodeVisitor):
+    def __init__(self, source):
+        self._source_lines = source.split('\n')
+
     @staticmethod
     def tex_function_name(name):
         if name in 'max'.split():
@@ -39,6 +43,8 @@ class Visitor(ast.NodeVisitor):
             ast.Mult: '*',
             ast.Add: '+',
             ast.USub: '-',
+            ast.NotEq: r'\ne',
+            ast.Eq: r'\eq',
         }
         return ops[type(operator)]
 
@@ -59,11 +65,27 @@ class Visitor(ast.NodeVisitor):
 
     ## Top level
 
+    def visit(self, node):
+        try:
+            return super(Visitor, self).visit(node)
+        except:
+            try:
+                lineno = node.lineno
+                col_offset = node.col_offset
+            except AttributeError:
+                lineno = col_offset = None
+            print('At node %s' % node, file=sys.stderr)
+            if lineno is not None and lineno > 0:
+                print(self._source_lines[lineno - 1], file=sys.stderr)
+                print(' ' * col_offset + '^', file=sys.stderr)
+            raise
+
     def generic_visit(self, node):
         self.unhandled.add(type(node))
         print(r'%% a %s' % (type(node).__name__,))
 
     def visit_Module(self, node):
+        print(r'\providecommand{\eq}{=}')
         self.unhandled = set()
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
@@ -96,8 +118,10 @@ class Visitor(ast.NodeVisitor):
 
     def visit_Assign(self, node):
         print(r'\STATE $', end='')
-        print(', '.join(self.tex_variable(name.id)
-                        for name in node.targets))
+        for i, arg in enumerate(node.targets):
+            if i > 0:
+                print(',')
+            self.visit(arg)
         print(r'\gets', end=' ')
         self.visit(node.value)
         print(r'$')
@@ -108,6 +132,23 @@ class Visitor(ast.NodeVisitor):
         print(r'\mathbin{{%s}{=}}' % (self.operator(node.op),))
         self.visit(node.value)
         print('$')
+
+    def visit_If(self, node, macro='IF'):
+        print(r'\%s{$' % macro, end='')
+        self.visit(node.test)
+        print('$}')
+        for child in node.body:
+            self.visit(child)
+        if node.orelse:
+            if len(node.orelse) == 1 and type(node.orelse[0]) == type(node):
+                self.visit_If(node.orelse[0], macro='ELSIF')
+                # Recursion prints ENDIF; return here
+                return
+            else:
+                print(r'\ELSE')
+                for child in node.orelse:
+                    self.visit(child)
+        print(r'\ENDIF')
 
     def visit_For(self, node):
         if node.iter.func.id == 'range':
@@ -147,6 +188,11 @@ class Visitor(ast.NodeVisitor):
     def visit_Num(self, node):
         print(node.n, end=' ')
 
+    def visit_Attribute(self, node):
+        self.visit(node.value)
+        print('.', end=' ')
+        print(self.tex_variable(node.attr), end=' ')
+
     def visit_Call(self, node):
         if node.func.id == 'len':
             print(r'\left|', end=' ')
@@ -161,6 +207,12 @@ class Visitor(ast.NodeVisitor):
                 self.visit(arg)
             print('')
             print(')', end=' ')
+
+    def visit_Compare(self, node):
+        self.visit(node.left)
+        for op, right in zip(node.ops, node.comparators):
+            print(self.operator(op), end=' ')
+            self.visit(right)
 
     def visit_BinOp(self, node):
         self.visit(node.left)
@@ -208,8 +260,9 @@ def main():
     parser.add_argument('filename')
     args = parser.parse_args()
     with open(args.filename) as fp:
-        o = ast.parse(fp.read(), args.filename, 'exec')
-    visitor = Visitor()
+        source = fp.read()
+    o = ast.parse(source, args.filename, 'exec')
+    visitor = Visitor(source)
     visitor.visit(o)
 
 
