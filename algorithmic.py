@@ -42,9 +42,12 @@ class Visitor(ast.NodeVisitor):
         ops = {
             ast.Mult: '*',
             ast.Add: '+',
+            ast.Sub: '-',
             ast.USub: '-',
             ast.NotEq: r'\ne',
             ast.Eq: r'\eq',
+            ast.Gt: '>',
+            ast.And: r'\land',
         }
         return ops[type(operator)]
 
@@ -62,6 +65,13 @@ class Visitor(ast.NodeVisitor):
             return
         else:
             return rows
+
+    @staticmethod
+    def name_eq(node, name):
+        try:
+            return node.id == name
+        except AttributeError:
+            return False
 
     ## Top level
 
@@ -86,6 +96,7 @@ class Visitor(ast.NodeVisitor):
 
     def visit_Module(self, node):
         print(r'\providecommand{\eq}{=}')
+        print(r'\providecommand{\emptystring}{\text{empty string}}')
         self.unhandled = set()
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
@@ -111,6 +122,12 @@ class Visitor(ast.NodeVisitor):
         print(r'\end{algorithm}')
 
     ## Statements
+
+    def visit_Expr(self, node):
+        print(r'\STATE')
+        print('$', end='')
+        self.visit(node.value)
+        print('$')
 
     def visit_Return(self, node):
         print(r'\RETURN')
@@ -150,8 +167,16 @@ class Visitor(ast.NodeVisitor):
                     self.visit(child)
         print(r'\ENDIF')
 
+    def visit_While(self, node, macro='IF'):
+        print(r'\WHILE{$', end='')
+        self.visit(node.test)
+        print('$}')
+        for child in node.body:
+            self.visit(child)
+        print(r'\ENDWHILE')
+
     def visit_For(self, node):
-        if node.iter.func.id == 'range':
+        if self.name_eq(node.iter.func, 'range'):
             print(r'\FOR{$', end='')
             self.visit(node.target)
             print(r'=', end=' ')
@@ -188,25 +213,34 @@ class Visitor(ast.NodeVisitor):
     def visit_Num(self, node):
         print(node.n, end=' ')
 
+    def visit_Str(self, node):
+        if node.s:
+            print("\\verb+%s+" % node.s, end=' ')
+        else:
+            print("\\emptystring", end=' ')
+
     def visit_Attribute(self, node):
         self.visit(node.value)
         print('.', end=' ')
         print(self.tex_variable(node.attr), end=' ')
 
     def visit_Call(self, node):
-        if node.func.id == 'len':
+        if self.name_eq(node.func, 'len'):
             print(r'\left|', end=' ')
             self.visit(node.args[0])
             print(r'\right|', end=' ')
         else:
-            print(self.tex_function_name(node.func.id), end='')
-            print('(')
-            for i, arg in enumerate(node.args):
-                if i > 0:
-                    print(',')
-                self.visit(arg)
-            print('')
-            print(')', end=' ')
+            self.visit(node.func)
+            if node.args:
+                print('(')
+                for i, arg in enumerate(node.args):
+                    if i > 0:
+                        print(',')
+                    self.visit(arg)
+                print('')
+                print(')', end=' ')
+            else:
+                print('()')
 
     def visit_Compare(self, node):
         self.visit(node.left)
@@ -218,6 +252,12 @@ class Visitor(ast.NodeVisitor):
         self.visit(node.left)
         print(self.operator(node.op), end=' ')
         self.visit(node.right)
+
+    def visit_BoolOp(self, node):
+        self.visit(node.values[0])
+        for v in node.values[1:]:
+            print(self.operator(node.op), end=' ')
+            self.visit(v)
 
     def visit_UnaryOp(self, node):
         print(self.operator(node.op), end='')
@@ -245,10 +285,25 @@ class Visitor(ast.NodeVisitor):
             print('')
             print(r'\rangle', end=' ')
 
+    def visit_Tuple(self, node):
+        print(r'(')
+        for i, child in enumerate(node.elts):
+            if i > 0:
+                print(',', end=' ')
+            self.visit(child)
+        print('')
+        print(r')', end=' ')
+
     def visit_Subscript(self, node):
         self.visit(node.value)
         print('[', end='')
-        self.visit(node.slice)
+        if isinstance(node.slice, ast.Index) and isinstance(node.slice.value, ast.Tuple):
+            for i, child in enumerate(node.slice.value.elts):
+                if i > 0:
+                    print(',', end=' ')
+                self.visit(child)
+        else:
+            self.visit(node.slice)
         print(']', end=' ')
 
     def visit_Index(self, node):
