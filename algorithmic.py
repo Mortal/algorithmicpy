@@ -181,7 +181,7 @@ class Visitor(ast.NodeVisitor):
             self.visit(node.target)
             print(r'=', end=' ')
             args = node.iter.args
-            if len(args) == 0:
+            if len(args) == 1:
                 print(r'0$ \TO $', end='')
                 self.visit(args[0])
                 print(r'- 1', end='')
