@@ -231,7 +231,8 @@ class Visitor(ast.NodeVisitor):
         print(self.tex_variable(node.attr), end=' ')
 
     def visit_Call(self, node):
-        if self.name_eq(node.func, 'len'):
+        name = self.node_name(node.func)
+        if name == 'len':
             print(r'\left|', end=' ')
             self.visit(node.args[0])
             print(r'\right|', end=' ')
