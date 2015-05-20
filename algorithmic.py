@@ -32,6 +32,8 @@ class Visitor(ast.NodeVisitor):
             return special[v]
         elif len(v) == 1:
             return v
+        elif '_' in v:
+            return Visitor.tex_function_name(v)
         else:
             return r'\textit{%s}' % v
 
