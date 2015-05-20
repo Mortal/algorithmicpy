@@ -47,12 +47,20 @@ class Visitor(ast.NodeVisitor):
         ops = {
             ast.Mult: '*',
             ast.Add: '+',
+            ast.UAdd: '{+}',
             ast.Sub: '-',
-            ast.USub: '-',
+            ast.Div: '/',
+            ast.FloorDiv: '//',
+            ast.Mod: r'\bmod',
+            ast.USub: '{-}',
             ast.NotEq: r'\ne',
             ast.Eq: r'\eq',
+            ast.Lt: '<',
             ast.Gt: '>',
+            ast.LtE: r'\leq',
+            ast.GtE: r'\geq',
             ast.And: r'\land',
+            ast.Or: r'\lor',
         }
         return ops[type(operator)]
 
