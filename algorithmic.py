@@ -337,6 +337,7 @@ POSTAMBLE = r"""
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--preamble', action='store_true')
+    parser.add_argument('-3', '--new-style', action='store_true')
     parser.add_argument('filename')
     args = parser.parse_args()
     with open(args.filename) as fp:
@@ -345,6 +346,11 @@ def main():
     visitor = Visitor(source)
     if args.preamble:
         print(PREAMBLE)
+    if args.new_style:
+        print(r'\newcommand{\eq}{==}')
+        print(r'\renewcommand{\gets}{=}')
+        print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
+        print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
     visitor.visit(o)
     if args.preamble:
         print(POSTAMBLE)
