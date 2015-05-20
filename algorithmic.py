@@ -251,9 +251,16 @@ class Visitor(ast.NodeVisitor):
             self.visit(right)
 
     def visit_BinOp(self, node):
-        self.visit(node.left)
-        print(self.operator(node.op), end=' ')
-        self.visit(node.right)
+        if type(node.op) == ast.FloorDiv:
+            print(r'\lfloor', end=' ')
+            self.visit(node.left)
+            print('/', end=' ')
+            self.visit(node.right)
+            print(r'\rfloor', end=' ')
+        else:
+            self.visit(node.left)
+            print(self.operator(node.op), end=' ')
+            self.visit(node.right)
 
     def visit_BoolOp(self, node):
         self.visit(node.values[0])
