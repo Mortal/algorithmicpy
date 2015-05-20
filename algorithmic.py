@@ -67,11 +67,15 @@ class Visitor(ast.NodeVisitor):
             return rows
 
     @staticmethod
-    def name_eq(node, name):
+    def node_name(node):
         try:
-            return node.id == name
+            return node.id
         except AttributeError:
-            return False
+            return None
+
+    @staticmethod
+    def name_eq(node, name):
+        return Visitor.node_name(node) == name
 
     ## Top level
 
