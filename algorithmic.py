@@ -131,7 +131,9 @@ class Visitor(ast.NodeVisitor):
 
     def visit_Return(self, node):
         print(r'\RETURN')
+        print('$', end='')
         self.visit(node.value)
+        print('$')
 
     def visit_Assign(self, node):
         print(r'\STATE $', end='')
