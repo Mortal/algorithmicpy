@@ -4,10 +4,50 @@ import sys
 import argparse
 
 
-class Visitor(ast.NodeVisitor):
+class VisitorBase(ast.NodeVisitor):
+    dump_unhandled = False
+
     def __init__(self, source):
         self._source_lines = source.split('\n')
+        self.unhandled = set()
 
+    def visit(self, node):
+        if isinstance(node, list):
+            for x in node:
+                self.visit(x)
+            return
+        try:
+            return super(VisitorBase, self).visit(node)
+        except:
+            self.source_backtrace(node, sys.stderr)
+            raise
+
+    def source_backtrace(self, node, file):
+        try:
+            lineno = node.lineno
+            col_offset = node.col_offset
+        except AttributeError:
+            lineno = col_offset = None
+        print('At node %s' % node, file=file)
+        if lineno is not None and lineno > 0:
+            print(self._source_lines[lineno - 1], file=file)
+            print(' ' * col_offset + '^', file=file)
+
+    def generic_visit(self, node):
+        if self.dump_unhandled and type(node) not in self.unhandled:
+            self.source_backtrace(node, sys.stderr)
+            print("%s unhandled" % (type(node).__name__,), file=sys.stderr)
+        self.unhandled.add(type(node).__name__)
+
+    def visit_children(self, node):
+        for child in ast.iter_child_nodes(node):
+            self.visit(child)
+
+    def visit_Module(self, node):
+        self.visit_children(node)
+
+
+class Visitor(VisitorBase):
     @staticmethod
     def tex_function_name(name):
         if name in 'max'.split():
@@ -94,29 +134,9 @@ class Visitor(ast.NodeVisitor):
 
     ## Top level
 
-    def visit(self, node):
-        try:
-            return super(Visitor, self).visit(node)
-        except:
-            try:
-                lineno = node.lineno
-                col_offset = node.col_offset
-            except AttributeError:
-                lineno = col_offset = None
-            print('At node %s' % node, file=sys.stderr)
-            if lineno is not None and lineno > 0:
-                print(self._source_lines[lineno - 1], file=sys.stderr)
-                print(' ' * col_offset + '^', file=sys.stderr)
-            raise
-
-    def generic_visit(self, node):
-        self.unhandled.add(type(node))
-        print(r'%% a %s' % (type(node).__name__,))
-
     def visit_Module(self, node):
         print(r'\providecommand{\eq}{=}')
         print(r'\providecommand{\emptystring}{\text{empty string}}')
-        self.unhandled = set()
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
                 self.visit(child)
