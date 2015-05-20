@@ -25,7 +25,12 @@ class Visitor(ast.NodeVisitor):
                 return r'%s_%s' % (vv, o.group(2))
             else:
                 return r'%s_{%s}' % (vv, o.group(2))
-        if len(v) == 1:
+        special = {
+            'inf': r'\infty',
+        }
+        if v in special:
+            return special[v]
+        elif len(v) == 1:
             return v
         else:
             return r'\textit{%s}' % v
