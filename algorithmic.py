@@ -320,15 +320,34 @@ class Visitor(ast.NodeVisitor):
         self.visit(node.value)
 
 
+PREAMBLE = r"""
+\documentclass[a4paper,oneside,article]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[noend]{algorithmic}
+\usepackage{algorithm}
+\usepackage{amsmath}
+\begin{document}
+""".strip()
+
+POSTAMBLE = r"""
+\end{document}
+""".strip()
+
+
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--preamble', action='store_true')
     parser.add_argument('filename')
     args = parser.parse_args()
     with open(args.filename) as fp:
         source = fp.read()
     o = ast.parse(source, args.filename, 'exec')
     visitor = Visitor(source)
+    if args.preamble:
+        print(PREAMBLE)
     visitor.visit(o)
+    if args.preamble:
+        print(POSTAMBLE)
 
 
 if __name__ == "__main__":
