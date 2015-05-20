@@ -291,7 +291,8 @@ class Visitor(ast.NodeVisitor):
                 if i > 0:
                     print(',', end=' ')
                 self.visit(child)
-            print('')
+            if node.elts:
+                print('')
             print(r'\rangle', end=' ')
 
     def visit_Tuple(self, node):
