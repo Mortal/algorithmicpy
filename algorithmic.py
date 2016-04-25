@@ -155,10 +155,15 @@ class Visitor(VisitorBase):
               (self.tex_function_name(node.name),
                self.tex_arguments(node.args)))
         print(r'\begin{algorithmic}[1]')
-        for child in node.body:
+        for i, child in enumerate(node.body):
+            if i == 0 and self.is_docstring(child):
+                continue
             self.visit(child)
         print(r'\end{algorithmic}')
         print(r'\end{algorithm}')
+
+    def is_docstring(self, node):
+        return type(node) == ast.Expr and type(node.value) == ast.Str
 
     ## Statements
 
