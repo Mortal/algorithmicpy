@@ -179,7 +179,12 @@ class Visitor(VisitorBase):
         self.visit(node.value)
         print('$')
 
+    def is_getslice(self, node):
+        return isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Slice)
+
     def visit_Assign(self, node):
+        if len(node.targets) == 1 and self.is_getslice(node.targets[0]):
+            return self.visit_SliceAssign(node.targets[0], node.value)
         print(r'\STATE $', end='')
         for i, arg in enumerate(node.targets):
             if i > 0:
@@ -188,6 +193,30 @@ class Visitor(VisitorBase):
         print(r'\gets', end=' ')
         self.visit(node.value)
         print(r'$')
+
+    def visit_SliceAssign(self, target, value):
+        # TODO ast.Node.__eq__ is reference equality;
+        # implement structural equality instead.
+        if target.slice.lower == target.slice.upper and target.slice.step is None:
+            print(r'\STATE insert $')
+            self.visit(value)
+            print(r'$ at $')
+            self.visit(target)
+            print(r'$ position $')
+            self.visit(target.slice.lower)
+            print(r'$')
+        else:
+            print(r'\STATE $')
+            self.visit(target.value)
+            print('[')
+            self.visit(target.slice.lower)
+            print(':')
+            self.visit(target.slice.upper)
+            print(':')
+            self.visit(target.slice.step)
+            print(r'] \gets')
+            self.visit(value)
+            print(r'$')
 
     def visit_AugAssign(self, node):
         print(r'\STATE $', end='')
