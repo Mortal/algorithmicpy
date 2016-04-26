@@ -2,6 +2,7 @@ import re
 import ast
 import sys
 import argparse
+import functools
 
 
 class VisitorBase(ast.NodeVisitor):
@@ -158,12 +159,28 @@ PATTERNS = [
 GLOBALS = 'len min max inf float'.split()
 
 
+def str_sub(sub, matches, print, visit):
+    i = 0
+    for mo in re.finditer('#(\w+)', sub):
+        j = mo.start(0)
+        if i != j:
+            print(sub[i:j], end='')
+        i = mo.end(0)
+        visit(matches[mo.group(1)])
+    j = len(sub)
+    if i != j:
+        print(sub[i:j], end='')
+    return True
+
+
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.patterns = []
         for k, v in PATTERNS:
             e = ast.parse(k, mode='single').body[0]
+            if isinstance(v, str):
+                v = functools.partial(str_sub, v)
             if isinstance(e, ast.Expr):
                 self.patterns.append((e.value, v))
             else:
@@ -249,8 +266,8 @@ class Visitor(VisitorBase):
         for pat, sub in self.patterns:
             matches = pattern_match(pat, node, globals=GLOBALS)
             if matches is not None:
-                self.output_sub(matches, sub)
-                break
+                if sub(matches, print=print, visit=self.visit):
+                    break
         else:
             super().visit(node)
 
@@ -288,18 +305,6 @@ class Visitor(VisitorBase):
         return type(node) == ast.Expr and type(node.value) == ast.Str
 
     ## Statements
-
-    def output_sub(self, matches, sub):
-        i = 0
-        for mo in re.finditer('#(\w+)', sub):
-            j = mo.start(0)
-            if i != j:
-                print(sub[i:j], end='')
-            i = mo.end(0)
-            self.visit(matches[mo.group(1)])
-        j = len(sub)
-        if i != j:
-            print(sub[i:j], end='')
 
     def visit_Expr(self, node):
         print(r'\STATE')
