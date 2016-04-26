@@ -148,6 +148,8 @@ PATTERNS = [
     ("max(a, b)", r"\max\{#a, #b\}"),
 ]
 
+GLOBALS = 'len min max'.split()
+
 
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
@@ -246,8 +248,7 @@ class Visitor(VisitorBase):
 
     def visit(self, node):
         for pat, sub in self.patterns:
-            globals = 'len min max'.split()
-            matches = pattern_match(pat, node, globals=globals)
+            matches = pattern_match(pat, node, globals=GLOBALS)
             if matches is not None:
                 self.output_sub(matches, sub)
                 break
