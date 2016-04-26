@@ -135,6 +135,8 @@ def pattern_match_rec(a, b, globals, bindings):
 
 PATTERNS = [
     ("a // b", r"\lfloor #a / #b \rfloor"),
+    ("a.extend([b[-1]])",
+     r"\text{insert the last element of $#b$ at the end of $#a$}"),
     ("a[0:0] = b", r"\STATE \text{insert $#b$ at the beginning of $#a$}"),
     ("a[i:i] = b", r"\STATE \text{insert $#b$ just before $#a[#i]$}"),
     ("a[0:1] = []", r"\STATE \text{remove first element of $#a$}"),
@@ -143,13 +145,17 @@ PATTERNS = [
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
     ("not a", r"\text{not } #a"),
     ("a[:i]", r"#a[0\dots #i)"),
+    ("a[i:]", r"#a[#i \dots \text{end})"),
+    ("a[-1]", r"#a[\text{end}]"),
     ("len(a)", r"|#a|"),
     ("min(a, b)", r"\min\{#a, #b\}"),
     ("max(a, b)", r"\max\{#a, #b\}"),
     ("inf", r'\infty'),
+    ("inf = float('inf')",
+     r"\STATE let ``$\infty$'' be floating-point infinity"),
 ]
 
-GLOBALS = 'len min max inf'.split()
+GLOBALS = 'len min max inf float'.split()
 
 
 class Visitor(VisitorBase):
