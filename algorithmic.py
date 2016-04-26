@@ -247,7 +247,7 @@ class Visitor(VisitorBase):
                 print(r'\end{algorithmic}')
         if self.unhandled:
             print("% Not handled:")
-            for n in sorted(t.__name__ for t in self.unhandled):
+            for n in sorted(self.unhandled):
                 print("%% %s" % (n,))
 
     def visit_FunctionDef(self, node):
