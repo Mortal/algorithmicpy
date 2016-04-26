@@ -165,11 +165,8 @@ class Visitor(VisitorBase):
 
     @staticmethod
     def tex_function_name(name):
-        if name in 'max'.split():
-            return r'\mathrm{%s}' % (name,)
-        else:
-            tex = name.replace('_', ' ').title().replace(' ', '-')
-            return r'\textsc{%s}' % (tex,)
+        tex = name.replace('_', ' ').title().replace(' ', '-')
+        return r'\textsc{%s}' % (tex,)
 
     @staticmethod
     def tex_variable(v):
@@ -180,12 +177,7 @@ class Visitor(VisitorBase):
                 return r'%s_%s' % (vv, o.group(2))
             else:
                 return r'%s_{%s}' % (vv, o.group(2))
-        special = {
-            'inf': r'\infty',
-        }
-        if v in special:
-            return special[v]
-        elif len(v) == 1:
+        if len(v) == 1:
             return v
         elif '_' in v:
             return Visitor.tex_function_name(v)
