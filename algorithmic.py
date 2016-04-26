@@ -146,9 +146,10 @@ PATTERNS = [
     ("len(a)", r"|#a|"),
     ("min(a, b)", r"\min\{#a, #b\}"),
     ("max(a, b)", r"\max\{#a, #b\}"),
+    ("inf", r'\infty'),
 ]
 
-GLOBALS = 'len min max'.split()
+GLOBALS = 'len min max inf'.split()
 
 
 class Visitor(VisitorBase):
