@@ -290,7 +290,6 @@ class Visitor(VisitorBase):
     ## Statements
 
     def output_sub(self, matches, sub):
-        matches = dict(matches)
         i = 0
         for mo in re.finditer('#(\w+)', sub):
             j = mo.start(0)
