@@ -18,7 +18,7 @@ class VisitorBase(ast.NodeVisitor):
             return
         try:
             return super(VisitorBase, self).visit(node)
-        except:
+        except Exception:
             self.source_backtrace(node, sys.stderr)
             raise
 
