@@ -144,7 +144,6 @@ PATTERNS = [
     ("a[-1:] = []", r"\STATE \text{remove last element of $#a$}"),
     ("a[-2:] = []", r"\STATE \text{remove last two elements of $#a$}"),
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
-    ("not a", r"\text{not } #a"),
     ("a[:i]", r"#a[0\dots #i)"),
     ("a[i:]", r"#a[#i \dots \text{end})"),
     ("a[-1]", r"#a[\text{end}]"),
@@ -233,6 +232,7 @@ class Visitor(VisitorBase):
             ast.GtE: r'\geq',
             ast.And: r'\land',
             ast.Or: r'\lor',
+            ast.Not: r'\text{not }',
         }
         return ops[type(operator)]
 
