@@ -58,7 +58,6 @@ def node_eq(a, b):
     """
     m = pattern_match(a, b)
     if m is None:
-        print("node_eq: no match", file=sys.stderr)
         return False
     return all(k == v.id for k, v in m.items())
 
@@ -101,7 +100,7 @@ def pattern_match_rec(a, b, globals, bindings):
             bindings[a.id] = b
         else:
             if not node_eq(b, ex):
-                print("Unification against %s failed" % a.id, b, ast.dump(ex), file=sys.stderr)
+                # print("Unification with %s failed" % a.id, file=sys.stderr)
                 return False
         return True
     if type(a) != type(b):
