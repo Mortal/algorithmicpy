@@ -134,10 +134,32 @@ def pattern_match_rec(a, b, globals, bindings):
     return True
 
 
+PATTERNS = [
+    ("a // b", r"\lfloor #a / #b \rfloor"),
+    ("a[0:0] = b", r"\STATE \text{insert $#b$ at the beginning of $#a$}"),
+    ("a[i:i] = b", r"\STATE \text{insert $#b$ just before $#a[#i]$}"),
+    ("a[0:1] = []", r"\STATE \text{remove first element of $#a$}"),
+    ("a[-1:] = []", r"\STATE \text{remove last element of $#a$}"),
+    ("a[-2:] = []", r"\STATE \text{remove last two elements of $#a$}"),
+    ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
+    ("not a", r"\text{not } #a"),
+    ("a[:i]", r"#a[0\dots #i)"),
+    ("len(a)", r"|#a|"),
+    ("min(a, b)", r"\min\{#a, #b\}"),
+    ("max(a, b)", r"\max\{#a, #b\}"),
+]
+
+
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.patterns = []
+        for k, v in PATTERNS:
+            e = ast.parse(k, mode='single').body[0]
+            if isinstance(e, ast.Expr):
+                self.patterns.append((e.value, v))
+            else:
+                self.patterns.append((e, v))
 
     @staticmethod
     def tex_function_name(name):
@@ -225,7 +247,7 @@ class Visitor(VisitorBase):
 
     def visit(self, node):
         for pat, sub in self.patterns:
-            globals = []
+            globals = 'len min max'.split()
             matches = pattern_match(pat, node, globals=globals)
             if matches is not None:
                 self.output_sub(matches, sub)
@@ -414,34 +436,17 @@ class Visitor(VisitorBase):
         print(self.tex_variable(node.attr), end=' ')
 
     def visit_Call(self, node):
-        builtins = {
-            f: r'\%s' % (f,)
-            for f in 'min max'.split()
-        }
-        name = self.node_name(node.func)
-        if name == 'len':
-            print(r'\left|', end=' ')
-            self.visit(node.args[0])
-            print(r'\right|', end=' ')
-        elif name in builtins:
-            print(r'%s(' % builtins[name], end=' ')
+        self.visit(node.func)
+        if node.args:
+            print('(')
             for i, arg in enumerate(node.args):
                 if i > 0:
-                    print(',', end=' ')
+                    print(',')
                 self.visit(arg)
+            print('')
             print(')', end=' ')
         else:
-            self.visit(node.func)
-            if node.args:
-                print('(')
-                for i, arg in enumerate(node.args):
-                    if i > 0:
-                        print(',')
-                    self.visit(arg)
-                print('')
-                print(')', end=' ')
-            else:
-                print('()')
+            print('()')
 
     def visit_Compare(self, node):
         self.visit(node.left)
