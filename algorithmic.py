@@ -313,9 +313,12 @@ class Visitor(VisitorBase):
 
     def visit_Expr(self, node):
         print(r'\STATE')
-        print('$', end='')
-        self.visit(node.value)
-        print('$')
+        if isinstance(node.value, ast.Str):
+            print(node.value.s)
+        else:
+            print('$', end='')
+            self.visit(node.value)
+            print('$')
 
     def visit_Return(self, node):
         print(r'\RETURN')
