@@ -135,6 +135,10 @@ def pattern_match_rec(a, b, globals, bindings):
 
 
 class Visitor(VisitorBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.patterns = []
+
     @staticmethod
     def tex_function_name(name):
         if name in 'max'.split():
@@ -218,6 +222,16 @@ class Visitor(VisitorBase):
     @staticmethod
     def name_eq(node, name):
         return Visitor.node_name(node) == name
+
+    def visit(self, node):
+        for pat, sub in self.patterns:
+            globals = []
+            matches = pattern_match(pat, node, globals=globals)
+            if matches is not None:
+                self.output_sub(matches, sub)
+                break
+        else:
+            super().visit(node)
 
     ## Top level
 
