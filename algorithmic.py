@@ -268,6 +268,19 @@ class Visitor(VisitorBase):
 
     ## Statements
 
+    def output_sub(self, matches, sub):
+        matches = dict(matches)
+        i = 0
+        for mo in re.finditer('#(\w+)', sub):
+            j = mo.start(0)
+            if i != j:
+                print(sub[i:j], end='')
+            i = mo.end(0)
+            self.visit(matches[mo.group(1)])
+        j = len(sub)
+        if i != j:
+            print(sub[i:j], end='')
+
     def visit_Expr(self, node):
         print(r'\STATE')
         print('$', end='')
