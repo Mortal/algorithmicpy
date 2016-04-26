@@ -153,9 +153,14 @@ PATTERNS = [
     ("a[:i]", r"#a[0\dots #i)"),
     ("a[i:]", r"#a[#i \dots \text{end})"),
     ("a[-1]", r"#a[\text{end}]"),
+    ("[[0] * m for i in range(n)]",
+     r"\text{a $#n \times #m$ matrix of zeros}"),
+    ("[0] * n",
+     r"\text{an array of $#n$ zeros}"),
+    ("print(v)", r"\text{output $#v$}"),
 ]
 
-GLOBALS = 'len min max inf float'.split()
+GLOBALS = 'len min max inf float print'.split()
 
 
 def str_sub(sub, matches, print, visit):
