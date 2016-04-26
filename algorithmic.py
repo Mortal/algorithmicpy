@@ -47,6 +47,93 @@ class VisitorBase(ast.NodeVisitor):
         self.visit_children(node)
 
 
+def node_eq(a, b):
+    """
+    >>> e = ast.parse('i+1 == i+1', mode='eval').body
+    >>> isinstance(e, ast.Compare)
+    True
+    >>> left, (right,) = e.left, e.comparators
+    >>> node_eq(left, right)
+    True
+    """
+    m = pattern_match(a, b)
+    if m is None:
+        print("node_eq: no match", file=sys.stderr)
+        return False
+    return all(k == v.id for k, v in m.items())
+
+
+def pattern_match(a, b, globals=None):
+    """
+    >>> def pattern_match_help(a, b, **kwargs):
+    ...     m = pattern_match(ast.parse(a, mode='eval').body,
+    ...                       ast.parse(b, mode='eval').body, **kwargs)
+    ...     if m is None:
+    ...         return
+    ...     return [(k, type(m[k]).__name__) for k in sorted(m.keys())]
+    >>> pattern_match_help('a // b', 'len(foo) // 42')
+    [('a', 'Call'), ('b', 'Num')]
+    >>> pattern_match_help('len(a)', 'len([1, 2, 3])', globals=['len'])
+    [('a', 'List')]
+    >>> pattern_match_help('[][i:i]', '[][i+1:i+1]', globals=['len'])
+    [('i', 'BinOp')]
+    """
+    if globals is None:
+        globals = []
+    bindings = {}
+    try:
+        result = pattern_match_rec(a, b, globals, bindings)
+    except Exception:
+        print(ast.dump(a, annotate_fields=False),
+              ast.dump(b, annotate_fields=False), file=sys.stderr)
+        raise
+    if not result:
+        return None
+    return bindings
+
+
+def pattern_match_rec(a, b, globals, bindings):
+    args = (globals, bindings)
+    if isinstance(a, ast.Name) and a.id not in globals:
+        try:
+            ex = bindings[a.id]
+        except KeyError:
+            bindings[a.id] = b
+        else:
+            if not node_eq(b, ex):
+                print("Unification against %s failed" % a.id, b, ast.dump(ex), file=sys.stderr)
+                return False
+        return True
+    if type(a) != type(b):
+        return False
+    if isinstance(a, (int, str)):
+        return a == b
+    if isinstance(a, list):
+        return (len(a) == len(b) and
+                all(pattern_match_rec(c, d, *args) for c, d in zip(a, b)))
+    if a is None:
+        return True
+    try:
+        a_lit = [ast.literal_eval(a)]
+    except ValueError:
+        a_lit = None
+    try:
+        b_lit = [ast.literal_eval(b)]
+    except ValueError:
+        b_lit = None
+    if a_lit == b_lit and a_lit is not None:
+        return True
+    for f in a._fields:
+        try:
+            if not pattern_match_rec(getattr(a, f), getattr(b, f), *args):
+                return False
+        except Exception:
+            print(ast.dump(a, annotate_fields=False),
+                  ast.dump(b, annotate_fields=False), file=sys.stderr)
+            raise
+    return True
+
+
 class Visitor(VisitorBase):
     @staticmethod
     def tex_function_name(name):
