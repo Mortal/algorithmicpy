@@ -153,7 +153,7 @@ PATTERNS = [
     ("max(a, b)", r"\max\{#a, #b\}"),
     ("inf", r'\infty'),
     ("inf = float('inf')",
-     r"\STATE let ``$\infty$'' be floating-point infinity"),
+     r"\STATE let ``$\infty$'' be positive infinity"),
 ]
 
 GLOBALS = 'len min max inf float'.split()
