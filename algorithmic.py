@@ -248,6 +248,8 @@ class Visitor(VisitorBase):
             ast.And: r'\land',
             ast.Or: r'\lor',
             ast.Not: r'\text{not }',
+            ast.In: r'\in',
+            ast.NotIn: r'\not\in',
         }
         return ops[type(operator)]
 
