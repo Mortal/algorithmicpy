@@ -159,6 +159,12 @@ PATTERNS = [
     ("[0] * n",
      r"\text{an array of $#n$ zeros}"),
     ("print(v)", r"\text{output $#v$}"),
+    ("{}", r"\text{empty hashmap}"),
+    ("S - {x}", r"#S \setminus \{#x\}"),
+    ("{x, y}", r"\{#x, #y\}"),
+    ("True", r"\top"),
+    ("False", r"\bot"),
+    ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
 ]
 
 GLOBALS = 'len min max inf float print'.split()
