@@ -381,7 +381,8 @@ class Visitor(VisitorBase):
         print(r'\ENDWHILE')
 
     def visit_For(self, node):
-        if self.name_eq(node.iter.func, 'range'):
+        if (isinstance(node.iter, ast.Call) and
+                self.name_eq(node.iter.func, 'range')):
             print(r'\FOR{$', end='')
             self.visit(node.target)
             print(r'=', end=' ')
