@@ -163,6 +163,12 @@ PATTERNS = [
 
 GLOBALS = 'len min max inf float print'.split()
 
+VARS = {
+    'sigma': r'\sigma',
+    'Sigma': r'\Sigma',
+    'delta': r'\delta',
+}
+
 
 def str_sub(sub, matches, print, visit):
     i = 0
@@ -210,7 +216,10 @@ class Visitor(VisitorBase):
         elif '_' in v:
             return Visitor.tex_function_name(v)
         else:
-            return r'\textit{%s}' % v
+            try:
+                return VARS[v]
+            except KeyError:
+                return r'\textit{%s}' % v
 
     @staticmethod
     def tex_arguments(args):
