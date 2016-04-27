@@ -150,6 +150,7 @@ PATTERNS = [
     ("a.extend([b[-1]])",
      r"\text{insert the last element of $#b$ at the end of $#a$}"),
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
+    ("a.append(b)", r"\text{insert $#b$ at the end of $#a$}"),
     ("a[:i]", r"#a[0\dots #i)"),
     ("a[i:]", r"#a[#i \dots \text{end})"),
     ("a[-1]", r"#a[\text{end}]"),
