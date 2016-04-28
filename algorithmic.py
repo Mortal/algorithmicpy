@@ -319,6 +319,8 @@ class Visitor(VisitorBase):
                 print("%% %s" % (n,))
 
     def visit_FunctionDef(self, node):
+        if node.name.startswith('_'):
+            return
         print(r"\begin{algorithm}")
         print(r"\caption{$%s(%s)$}" %
               (self.tex_function_name(node.name),
