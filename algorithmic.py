@@ -159,7 +159,7 @@ PATTERNS = [
     ("[0] * n",
      r"\text{an array of $#n$ zeros}"),
     ("print(v)", r"\text{output $#v$}"),
-    ("{}", r"\text{empty hashmap}"),
+    ("{}", r"\text{empty dictionary}"),
     ("S - {x}", r"#S \setminus \{#x\}"),
     ("{x, y}", r"\{#x, #y\}"),
     ("True", r"\top"),
