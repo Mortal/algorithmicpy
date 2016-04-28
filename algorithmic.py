@@ -309,10 +309,10 @@ class Visitor(VisitorBase):
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
                 self.visit(child)
-            else:
-                print(r'\begin{algorithmic}[1]')
-                self.visit(child)
-                print(r'\end{algorithmic}')
+            # else:
+            #     print(r'\begin{algorithmic}[1]')
+            #     self.visit(child)
+            #     print(r'\end{algorithmic}')
         if self.unhandled:
             print("% Not handled:")
             for n in sorted(self.unhandled):
