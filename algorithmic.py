@@ -221,6 +221,8 @@ class Visitor(VisitorBase):
                 return r'%s_%s' % (vv, o.group(2))
             else:
                 return r'%s_{%s}' % (vv, o.group(2))
+        if v.endswith('_prime'):
+            return "%s'" % Visitor.tex_variable(v[:-6])
         if len(v) == 1:
             return v
         elif '_' in v:
