@@ -165,9 +165,13 @@ PATTERNS = [
     ("True", r"\top"),
     ("False", r"\bot"),
     ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
+    ('set()', r'\emptyset'),
+    ('Set(a, b)', r'\{#a, #b\}'),
+    ('s.add(x)', r'#s = #s \cup \{#x\}'),
+    ('set(itertools.product(x, y))', r'#x \times #y'),
 ]
 
-GLOBALS = 'len min max inf float print'.split()
+GLOBALS = 'len min max inf float print Set'.split()
 
 VARS = {
     'sigma': r'\sigma',
