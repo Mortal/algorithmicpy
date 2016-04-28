@@ -262,6 +262,7 @@ class Visitor(VisitorBase):
             ast.Not: r'\text{not }',
             ast.In: r'\in',
             ast.NotIn: r'\not\in',
+            ast.BitOr: r'\cup',
         }
         return ops[type(operator)]
 
