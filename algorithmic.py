@@ -423,6 +423,9 @@ class Visitor(VisitorBase):
             self.visit(child)
         print(r'\ENDFOR')
 
+    def visit_Continue(self, node):
+        print(r'\STATE \textbf{continue}')
+
     ## Expressions
 
     def visit_Name(self, node):
