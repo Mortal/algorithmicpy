@@ -204,12 +204,11 @@ class Visitor(VisitorBase):
         self.patterns = []
         for k, v in PATTERNS:
             e = ast.parse(k, mode='single').body[0]
+            if isinstance(e, ast.Expr):
+                e = e.value
             if isinstance(v, str):
                 v = functools.partial(str_sub, v)
-            if isinstance(e, ast.Expr):
-                self.patterns.append((e.value, v))
-            else:
-                self.patterns.append((e, v))
+            self.patterns.append((e, v))
 
     @staticmethod
     def tex_function_name(name):
