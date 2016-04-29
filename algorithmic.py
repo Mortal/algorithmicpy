@@ -502,23 +502,16 @@ class Visitor(VisitorBase):
                 print(r'\\')
             print(r'\end{pmatrix}')
         else:
-            print(r'\langle')
-            for i, child in enumerate(node.elts):
-                if i > 0:
-                    print(',', end=' ')
-                self.visit(child)
-            if node.elts:
-                print('')
-            print(r'\rangle', end=' ')
+            self.visit_Tuple(node, r'\langle', r'\rangle')
 
-    def visit_Tuple(self, node):
-        print(r'(')
+    def visit_Tuple(self, node, left='(', right=')'):
+        print(left)
         for i, child in enumerate(node.elts):
             if i > 0:
                 print(',', end=' ')
             self.visit(child)
         print('')
-        print(r')', end=' ')
+        print(right, end=' ')
 
     def visit_Subscript(self, node):
         self.visit(node.value)
