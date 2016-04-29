@@ -147,6 +147,7 @@ PATTERNS = [
     ("a[0:1] = []", r"\STATE remove first element of $#a$"),
     ("a[-1:] = []", r"\STATE remove last element of $#a$"),
     ("a[-2:] = []", r"\STATE remove last two elements of $#a$"),
+    ('a = [None] + list(a)', r'\STATE insert sentinel element $#a[0]$'),
     ("a.extend([b[-1]])",
      r"\text{insert the last element of $#b$ at the end of $#a$}"),
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
@@ -156,6 +157,8 @@ PATTERNS = [
     ("a[-1]", r"#a[\text{end}]"),
     ("[[0] * m for i in range(n)]",
      r"\text{a $#n \times #m$ matrix of zeros}"),
+    ("[[None] * m for i in range(n)]",
+     r"\text{an empty $#n \times #m$ matrix}"),
     ("[0] * n",
      r"\text{an array of $#n$ zeros}"),
     ("print(v)", r"\text{output $#v$}"),
@@ -169,9 +172,10 @@ PATTERNS = [
     ('Set(a, b)', r'\{#a, #b\}'),
     ('s.add(x)', r'#s = #s \cup \{#x\}'),
     ('set(itertools.product(x, y))', r'#x \times #y'),
+    ('x.reverse()', r'\text{reverse $#x$}'),
 ]
 
-GLOBALS = 'len min max inf float print Set'.split()
+GLOBALS = 'len min max inf float print set Set range'.split()
 
 VARS = {
     'sigma': r'\sigma',
