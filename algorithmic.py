@@ -137,11 +137,11 @@ def pattern_match_rec(a, b, globals, bindings):
 PATTERNS = [
     ("inf = float('inf')",
      r"\STATE let ``$\infty$'' be positive infinity"),
-    ("a // b", r"\lfloor #a / #b \rfloor"),
+    ("a // b", r"\lfloor #a / #b \rfloor "),
     ("len(a)", r"|#a|"),
     ("min(a, b)", r"\min\{#a, #b\}"),
     ("max(a, b)", r"\max\{#a, #b\}"),
-    ("inf", r'\infty'),
+    ("inf", r'\infty '),
     ("a[0:0] = b", r"\STATE insert $#b$ at the beginning of $#a$"),
     ("a[i:i] = b", r"\STATE insert $#b$ just before $#a[#i]$"),
     ("a[0:1] = []", r"\STATE remove first element of $#a$"),
@@ -165,10 +165,10 @@ PATTERNS = [
     ("{}", r"\text{empty dictionary}"),
     ("S - {x}", r"#S \setminus \{#x\}"),
     ("{x, y}", r"\{#x, #y\}"),
-    ("True", r"\top"),
-    ("False", r"\bot"),
+    ("True", r"\top "),
+    ("False", r"\bot "),
     ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
-    ('set()', r'\emptyset'),
+    ('set()', r'\emptyset '),
     ('Set(a, b)', r'\{#a, #b\}'),
     ('s.add(x)', r'#s = #s \cup \{#x\}'),
     ('set(itertools.product(x, y))', r'#x \times #y'),
@@ -178,9 +178,9 @@ PATTERNS = [
 GLOBALS = 'len min max inf float print set Set range'.split()
 
 VARS = {
-    'sigma': r'\sigma',
-    'Sigma': r'\Sigma',
-    'delta': r'\delta',
+    'sigma': r'\sigma ',
+    'Sigma': r'\Sigma ',
+    'delta': r'\delta ',
 }
 
 
@@ -195,6 +195,8 @@ def str_sub(sub, expr, matches, print, visit):
     j = len(sub)
     if i != j:
         print(sub[i:j], end='')
+    if not expr:
+        print('')
     return True
 
 
@@ -345,7 +347,7 @@ class Visitor(VisitorBase):
     ## Statements
 
     def visit_Expr(self, node):
-        print(r'\STATE')
+        print(r'\STATE', end=' ')
         if isinstance(node.value, ast.Str):
             print(node.value.s)
         else:
@@ -354,7 +356,7 @@ class Visitor(VisitorBase):
             print('$')
 
     def visit_Return(self, node):
-        print(r'\RETURN')
+        print(r'\RETURN', end=' ')
         print('$', end='')
         self.visit(node.value)
         print('$')
@@ -363,9 +365,9 @@ class Visitor(VisitorBase):
         print(r'\STATE $', end='')
         for i, arg in enumerate(node.targets):
             if i > 0:
-                print(',')
+                print(', ', end='')
             self.visit(arg)
-        print(r'\gets', end=' ')
+        print(r' \gets ', end='')
         self.visit(node.value)
         print(r'$')
 
@@ -406,12 +408,12 @@ class Visitor(VisitorBase):
                 self.name_eq(node.iter.func, 'range')):
             print(r'\FOR{$', end='')
             self.visit(node.target)
-            print(r'=', end=' ')
+            print(r' = ', end='')
             args = node.iter.args
             if len(args) == 1:
                 print(r'0$ \TO $', end='')
                 self.visit(args[0])
-                print(r'- 1', end='')
+                print(r' - 1', end='')
             else:
                 self.visit(args[0])
                 print(r'$ \TO $', end='')
@@ -423,9 +425,9 @@ class Visitor(VisitorBase):
                     print(r'$}', end='')
             print('$}')
         else:
-            print(r'\FOR{$')
+            print(r'\FOR{$', end='')
             self.visit(node.target)
-            print(r'\in')
+            print(r'\in', end=' ')
             self.visit(node.iter)
             print('$}')
         for child in node.body:
@@ -438,16 +440,16 @@ class Visitor(VisitorBase):
     ## Expressions
 
     def visit_Name(self, node):
-        print(self.tex_variable(node.id), end=' ')
+        print(self.tex_variable(node.id), end='')
 
     def visit_Num(self, node):
-        print(node.n, end=' ')
+        print(node.n, end='')
 
     def visit_Str(self, node):
         if node.s:
-            print("\\verb+%s+" % node.s, end=' ')
+            print("\\verb+%s+" % node.s, end='')
         else:
-            print("\\emptystring", end=' ')
+            print("\\emptystring ", end='')
 
     def visit_Attribute(self, node):
         self.visit(node.value)
@@ -457,25 +459,24 @@ class Visitor(VisitorBase):
     def visit_Call(self, node):
         self.visit(node.func)
         if node.args:
-            print('(')
+            print('(', end='')
             for i, arg in enumerate(node.args):
                 if i > 0:
-                    print(',')
+                    print(',', end=' ')
                 self.visit(arg)
-            print('')
-            print(')', end=' ')
+            print(')', end='')
         else:
             print('()')
 
     def visit_Compare(self, node):
         self.visit(node.left)
         for op, right in zip(node.ops, node.comparators):
-            print(self.operator(op), end=' ')
+            print(' %s ' % (self.operator(op),), end='')
             self.visit(right)
 
     def visit_BinOp(self, node):
         self.visit(node.left)
-        print(self.operator(node.op), end=' ')
+        print(' %s ' % (self.operator(node.op),), end='')
         self.visit(node.right)
 
     def visit_BoolOp(self, node):
@@ -502,16 +503,15 @@ class Visitor(VisitorBase):
                 print(r'\\')
             print(r'\end{pmatrix}')
         else:
-            self.visit_Tuple(node, r'\langle', r'\rangle')
+            self.visit_Tuple(node, r'\langle ', r'\rangle ')
 
     def visit_Tuple(self, node, left='(', right=')'):
-        print(left)
+        print(left, end='')
         for i, child in enumerate(node.elts):
             if i > 0:
                 print(',', end=' ')
             self.visit(child)
-        print('')
-        print(right, end=' ')
+        print(right, end='')
 
     def visit_Subscript(self, node):
         self.visit(node.value)
@@ -523,7 +523,7 @@ class Visitor(VisitorBase):
                 self.visit(child)
         else:
             self.visit(node.slice)
-        print(']', end=' ')
+        print(']', end='')
 
     def visit_Index(self, node):
         self.visit(node.value)
