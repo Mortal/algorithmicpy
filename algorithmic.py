@@ -393,7 +393,7 @@ class Visitor(VisitorBase):
                     self.visit(child)
         print(r'\ENDIF')
 
-    def visit_While(self, node, macro='IF'):
+    def visit_While(self, node):
         print(r'\WHILE{$', end='')
         self.visit(node.test)
         print('$}')
