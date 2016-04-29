@@ -220,13 +220,13 @@ class Visitor(VisitorBase):
 
     @staticmethod
     def tex_variable(v):
-        o = re.fullmatch(r'(.*?)(\d+)', v)
+        o = re.fullmatch(r'(.*?)(?:_(.)|(\d+))', v)
         if o:
             vv = Visitor.tex_variable(o.group(1))
-            if len(o.group(2)) == 1:
+            if o.group(2):
                 return r'%s_%s' % (vv, o.group(2))
             else:
-                return r'%s_{%s}' % (vv, o.group(2))
+                return r'%s_{%s}' % (vv, o.group(3))
         if v.endswith('_prime'):
             return "%s'" % Visitor.tex_variable(v[:-6])
         if len(v) == 1:
