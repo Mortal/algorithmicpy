@@ -184,7 +184,7 @@ VARS = {
 }
 
 
-def str_sub(sub, matches, print, visit):
+def str_sub(sub, expr, matches, print, visit):
     i = 0
     for mo in re.finditer('#(\w+)', sub):
         j = mo.start(0)
@@ -206,8 +206,11 @@ class Visitor(VisitorBase):
             e = ast.parse(k, mode='single').body[0]
             if isinstance(e, ast.Expr):
                 e = e.value
+                expr = True
+            else:
+                expr = False
             if isinstance(v, str):
-                v = functools.partial(str_sub, v)
+                v = functools.partial(str_sub, v, expr)
             self.patterns.append((e, v))
 
     @staticmethod
