@@ -14,34 +14,39 @@ def distinguishable_states(Q, Sigma, delta, A):
         done = True
         for p in Q:
             for q in Q:
-                for sigma in Sigma:
-                    if different[Set(delta[p, sigma], delta[q, sigma])]:
-                        different[Set(p, q)] = True
-                        done = False
+                if not different[Set(p, q)]:
+                    for sigma in Sigma:
+                        if different[Set(delta[p, sigma], delta[q, sigma])]:
+                            different[Set(p, q)] = True
+                            done = False
     return different
 
 
 def minimize(Q, Sigma, q0, delta, A):
     """
-    >>> Q = {1, 2, 3}
+    >>> Q = {1, 2, 3, 4}
     >>> Sigma = {'a', 'b'}
     >>> q0 = 1
     >>> delta = {
     ...     (1, 'a'): 2,
-    ...     (1, 'b'): 2,
-    ...     (2, 'a'): 3,
+    ...     (1, 'b'): 3,
+    ...     (2, 'a'): 1,
     ...     (2, 'b'): 2,
-    ...     (3, 'a'): 2,
+    ...     (3, 'a'): 4,
     ...     (3, 'b'): 3,
+    ...     (4, 'a'): 3,
+    ...     (4, 'b'): 4,
     ... }
-    >>> A = {2, 3}
+    >>> A = {3, 4}
     >>> _print_machine((Q, Sigma, q0, delta, A))
-    I  1 a-> 2 b-> 2
-     A 2 a-> 3 b-> 2
-     A 3 a-> 2 b-> 3
+    I  1 a-> 2 b-> 3
+       2 a-> 1 b-> 2
+     A 3 a-> 4 b-> 3
+     A 4 a-> 3 b-> 4
     >>> _print_machine(minimize(Q, Sigma, q0, delta, A))
-    I  1 a-> 2 b-> 2
-     A 2 a-> 2 b-> 2
+    I  1 a-> 2 b-> 3
+       2 a-> 1 b-> 2
+     A 3 a-> 3 b-> 3
     """
     different = distinguishable_states(Q, Sigma, delta, A)
     rep = {}
@@ -109,6 +114,49 @@ def product(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2):
                 delta[(p, q), sigma] = (delta1[p, sigma], delta2[q, sigma])
     return Q, Sigma, q0, delta, A
 
+
+def shortest_paths(Q, Sigma, q0, delta, A):
+    """
+    >>> Q = {1, 2, 3, 4}
+    >>> Sigma = {'a', 'b'}
+    >>> q0 = 1
+    >>> delta = {
+    ...     (1, 'a'): 2,
+    ...     (1, 'b'): 3,
+    ...     (2, 'a'): 1,
+    ...     (2, 'b'): 2,
+    ...     (3, 'a'): 4,
+    ...     (3, 'b'): 3,
+    ...     (4, 'a'): 3,
+    ...     (4, 'b'): 4,
+    ... }
+    >>> A = {3, 4}
+    >>> shortest_paths(Q, Sigma, q0, delta, A)
+    {1: '', 2: 'a', 3: 'b', 4: 'ba'}
+    """
+    paths = {}
+    paths[q0] = ""
+    queue = [q0]
+    while len(queue) > 0:
+        p = queue[0]
+        queue[0:1] = []
+        for sigma in Sigma:
+            q = delta[p, sigma]
+            if q not in paths:
+                paths[q] = paths[p] + sigma
+                queue.append(q)
+    return paths
+
+
+def shortest_accepted(Q, Sigma, q0, delta, A):
+    paths = shortest_paths(Q, Sigma, q0, delta, A)
+    x = None
+    n = float('inf')
+    for q in A:
+        if len(paths[q]) < n:
+            x = paths[q]
+            n = len(paths[q])
+    return x
 
 def Set(*args):
     return frozenset(args)

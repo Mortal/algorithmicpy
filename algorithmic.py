@@ -137,6 +137,8 @@ def pattern_match_rec(a, b, globals, bindings):
 PATTERNS = [
     ("inf = float('inf')",
      r"\STATE let ``$\infty$'' be positive infinity"),
+    ("float('inf')", r"\infty"),
+    ("None", r"\textsc{nil}"),
     ("a // b", r"\lfloor #a / #b \rfloor "),
     ("len(a)", r"|#a|"),
     ("min(a, b)", r"\min\{#a, #b\}"),
