@@ -205,3 +205,224 @@ def _print_machine(M):
               (init, acc, q,
                ' '.join('%s-> %s' % (sigma, delta[q, sigma])
                         for sigma in sorted(Sigma))))
+
+
+def _print_nfa(M):
+    Q, Sigma, q0, delta, A = M
+    for q in sorted(Q):
+        init = 'I' if q == q0 else ' '
+        acc = 'A' if q in A else ' '
+        print('%s%s %s %s' %
+              (init, acc, q,
+               ' '.join('%s-> %s' % (sigma, r)
+                        for sigma in sorted(Sigma)
+                        for r in delta.get((q, sigma), []))))
+
+
+def _parse(s, empty, c, all, any, rep):
+    """
+    >>> rep = lambda s: {'': s}
+    >>> p = lambda s: _parse(s, empty=str, c=str, all=list, any=tuple, rep=rep)
+    >>> p("a")
+    'a'
+    >>> p("ab")
+    ['a', 'b']
+    >>> p("ab*")
+    ['a', {'': 'b'}]
+    >>> p("(ab)*")
+    {'': ['a', 'b']}
+    >>> p("(a|)*")
+    {'': ('a', '')}
+    """
+    i = 0
+
+    def peek():
+        nonlocal i
+        return '' if i >= len(s) else s[i]
+
+    def take():
+        nonlocal i
+        c = peek()
+        i += 1
+        while i < len(s) and s[i] == ' ':
+            i += 1
+        return c
+
+    def accept(c):
+        if peek() == c:
+            return take()
+
+    def peek_notany(c):
+        return c.find(peek()) == -1
+
+    def peek_char():
+        return peek_notany('()|*')
+
+    def expect(c):
+        if peek() != c:
+            raise ValueError("At %d: Expected %r, got %r" % (i, c, peek()))
+        take()
+
+    def factor():
+        if accept('('):
+            r = expression()
+            expect(')')
+        elif peek_char():
+            r = c(take())
+        else:
+            # Empty string
+            return empty()
+        while accept('*'):
+            r = rep(r)
+        return r
+
+    def term():
+        r = [factor()]
+        while peek_char():
+            r.append(factor())
+        return r[0] if len(r) == 1 else all(r)
+
+    def expression():
+        r = [term()]
+        while accept('|'):
+            r.append(term())
+        return r[0] if len(r) == 1 else any(r)
+
+    def input():
+        r = expression()
+        expect('')
+        return r
+
+    return input()
+
+
+def _parse_nfa(s):
+    """
+    >>> _print_nfa(_parse_nfa("(a|b)bc"))
+     A 0 
+       1 c-> 0
+       2 b-> 1
+    I  3 a-> 2 b-> 2
+       4 a-> 2
+       5 b-> 2
+    >>> _print_nfa(_parse_nfa("(a*|b)"))
+    """
+    Q = []
+    Sigma = set()
+    A = set()
+    delta = {}
+
+    qa = len(Q)
+    Q.append(qa)
+    A.add(qa)
+
+    def empty():
+        return lambda next: next
+
+    def character(c):
+        def r(next):
+            q = len(Q)
+            Q.append(q)
+            Sigma.add(c)
+            delta[q, c] = [next]
+            return q
+        return r
+
+    def all(ms):
+        def r(next):
+            for m in reversed(ms):
+                next = m(next)
+            return next
+        return r
+
+    def all(ms):
+        def r(next):
+            for m in reversed(ms):
+                next = m(next)
+            return next
+        return r
+
+    def any(ms):
+        def r(next):
+            q = len(Q)
+            Q.append(q)
+            qs = [m(next) for m in ms]
+            for sigma in Sigma:
+                delta[q, sigma] = [a for m in qs
+                                   for a in delta.get((m, sigma), [])]
+            return q
+        return r
+
+    def rep(m):
+        def r(next):
+            # TODO handle this properly...
+            q = len(Q)
+            Q.append(q)
+            if next in A:
+                A.add(q)
+            p = m(next)
+            for sigma in Sigma:
+                delta[q, sigma] = (
+                    delta.get((next, sigma), []) +
+                    delta.get((p, sigma), []))
+            return q
+        return r
+
+    q0 = _parse(s, empty, character, all, any, rep)(qa)
+    delta = {(q, sigma): frozenset(delta.get((q, sigma), []))
+             for q in Q for sigma in Sigma}
+    return Q, Sigma, q0, delta, A
+
+
+def determinize(Q, Sigma, q0, delta, A):
+    Q_prime = {Set(q0)}
+    delta_prime = {}
+
+    next = [Set(q0)]
+    while len(next) > 0:
+        p = next[0]
+        next[0:1] = []
+        for sigma in Sigma:
+            delta_prime[p, sigma] = Set()
+            for q in p:
+                delta_prime[p, sigma] = delta_prime[p, sigma].union(delta[q, sigma])
+            if delta_prime[p, sigma] not in Q_prime:
+                Q_prime.add(delta_prime[p, sigma])
+                next.append(delta_prime[p, sigma])
+
+    A_prime = set()
+    for p in Q_prime:
+        for q in p:
+            if q in A:
+                A_prime.add(p)
+
+    return Q_prime, Sigma, Set(q0), delta_prime, A_prime
+
+
+def rename(Q, Sigma, q0, delta, A):
+    names = {}
+    Q_prime = set()
+    A_prime = set()
+    n = 0
+    for q in Q:
+        n += 1
+        names[q] = n
+        Q_prime.add(n)
+        if q in A:
+            A_prime.add(n)
+    delta_prime = {}
+    for q in Q:
+        for sigma in Sigma:
+            delta_prime[names[q], sigma] = names[delta[q, sigma]]
+    return Q_prime, Sigma, names[q0], delta_prime, A_prime
+
+
+def _regex_fa(s):
+    """
+    >>> _print_machine(_regex_fa("(a|b)b*c"))
+    """
+    Q, Sigma, q0, delta, A = _parse_nfa(s)
+    Q, Sigma, q0, delta, A = determinize(Q, Sigma, q0, delta, A)
+    Q, Sigma, q0, delta, A = rename(Q, Sigma, q0, delta, A)
+    Q, Sigma, q0, delta, A = minimize(Q, Sigma, q0, delta, A)
+    return Q, Sigma, q0, delta, A
