@@ -1,6 +1,35 @@
 import itertools
 
 
+def reachable_states(Q, Sigma, q0, delta):
+    """
+    >>> Q = {1, 2, 3}
+    >>> Sigma = {'a'}
+    >>> q0 = 1
+    >>> delta = {(1, 'a'): 2, (2, 'a'): 2, (3, 'a'): 3}
+    >>> Q_prime, delta_prime = reachable_states(Q, Sigma, q0, delta)
+    >>> sorted(Q_prime)
+    [1, 2]
+    >>> sorted(delta_prime.keys())
+    [(1, 'a'), (2, 'a')]
+    """
+    next = [q0]
+    Q_prime = {q0}
+    while len(next) > 0:
+        p = next[0]
+        next[0:1] = []
+        for sigma in Sigma:
+            q = delta[p, sigma]
+            if q not in Q_prime:
+                Q_prime.add(q)
+                next.append(q)
+    delta_prime = {}
+    for q in Q_prime:
+        for sigma in Sigma:
+            delta_prime[q, sigma] = delta[q, sigma]
+    return Q_prime, delta_prime
+
+
 def distinguishable_states(Q, Sigma, delta, A):
     different = {}
     for p in Q:
@@ -48,6 +77,7 @@ def minimize(Q, Sigma, q0, delta, A):
        2 a-> 1 b-> 2
      A 3 a-> 3 b-> 3
     """
+    Q, delta = reachable_states(Q, Sigma, q0, delta)
     different = distinguishable_states(Q, Sigma, delta, A)
     rep = {}
     Q_prime = set()
