@@ -53,7 +53,7 @@ def distinguishable_states(Q, Sigma, delta, A):
 
 def minimize(Q, Sigma, q0, delta, A):
     """
-    >>> Q = {1, 2, 3, 4}
+    >>> Q = {1, 2, 3, 4, 5}
     >>> Sigma = {'a', 'b'}
     >>> q0 = 1
     >>> delta = {
@@ -65,6 +65,8 @@ def minimize(Q, Sigma, q0, delta, A):
     ...     (3, 'b'): 3,
     ...     (4, 'a'): 3,
     ...     (4, 'b'): 4,
+    ...     (5, 'a'): 5,
+    ...     (5, 'b'): 5,
     ... }
     >>> A = {3, 4}
     >>> _print_machine((Q, Sigma, q0, delta, A))
@@ -72,6 +74,7 @@ def minimize(Q, Sigma, q0, delta, A):
        2 a-> 1 b-> 2
      A 3 a-> 4 b-> 3
      A 4 a-> 3 b-> 4
+       5 a-> 5 b-> 5
     >>> _print_machine(minimize(Q, Sigma, q0, delta, A))
     I  1 a-> 2 b-> 3
        2 a-> 1 b-> 2
@@ -187,6 +190,7 @@ def shortest_accepted(Q, Sigma, q0, delta, A):
             x = paths[q]
             n = len(paths[q])
     return x
+
 
 def Set(*args):
     return frozenset(args)
