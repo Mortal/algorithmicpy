@@ -101,7 +101,7 @@ def minimize(Q, Sigma, q0, delta, A):
     return Q_prime, Sigma, q0_prime, delta_prime, A_prime
 
 
-def product(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2):
+def union(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2):
     """
     >>> Sigma = {'a', 'b'}
     >>> Q1 = {1, 2}
@@ -128,23 +128,42 @@ def product(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2):
     >>> _print_machine((Q2, Sigma, q2, delta2, A2))
     I  3 a-> 3 b-> 4
      A 4 a-> 4 b-> 3
-    >>> _print_machine(product(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2))
+    >>> _print_machine(union(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2))
     I  (1, 3) a-> (2, 3) b-> (1, 4)
      A (1, 4) a-> (2, 4) b-> (1, 3)
      A (2, 3) a-> (1, 3) b-> (2, 4)
      A (2, 4) a-> (1, 4) b-> (2, 3)
     """
-    Q = set()
+    Q, Sigma, q0, delta = product(Sigma, Q1, q1, delta1, Q2, q2, delta2)
     A = set()
+    for p in Q1:
+        for q in Q2:
+            if p in A1 or q in A2:
+                A.add((p, q))
+    return Q, Sigma, q0, delta, A
+
+
+def product(Sigma, Q1, q1, delta1, Q2, q2, delta2):
+    Q = set()
     q0 = (q1, q2)
     delta = {}
     for p in Q1:
         for q in Q2:
             Q.add((p, q))
-            if p in A1 or q in A2:
-                A.add((p, q))
             for sigma in Sigma:
                 delta[(p, q), sigma] = (delta1[p, sigma], delta2[q, sigma])
+    return Q, Sigma, q0, delta
+
+
+def symmetric_difference(Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2):
+    Q, Sigma, q0, delta = product(Sigma, Q1, q1, delta1, Q2, q2, delta2)
+    A = set()
+    for p in Q1:
+        for q in Q2:
+            if p in A1 and q not in A2:
+                A.add((p, q))
+            elif p not in A1 and q in A2:
+                A.add((p, q))
     return Q, Sigma, q0, delta, A
 
 
@@ -468,3 +487,29 @@ def matches(Q, Sigma, q0, delta, A, x):
     for i in range(len(x)):
         q = delta[q, x[i]]
     return q in A
+
+
+def _same_test(p1, p2):
+    """
+    >>> _same_test("(a|b*)*", "(a|b)*")
+    """
+    Q1, Sigma1, q1, delta1, A1 = _regex_fa(p1)
+    Q2, Sigma2, q2, delta2, A2 = _regex_fa(p2)
+    Sigma = set(Sigma1) | set(Sigma2)
+    Q, Sigma, q0, delta, A = symmetric_difference(
+        Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2)
+    Q, Sigma, q0, delta, A = minimize(Q, Sigma, q0, delta, A)
+    if len(A) > 0:
+        x = shortest_accepted(Q, Sigma, q0, delta, A)
+        a1 = matches(Q1, Sigma1, q1, delta1, A1, x)
+        a2 = matches(Q2, Sigma2, q2, delta2, A2, x)
+        print(p1)
+        _print_nfa(_parse_nfa(p1))
+        print(p2)
+        _print_nfa(_parse_nfa(p2))
+        if a1 and not a2:
+            print("Accepted by %r but not by %r: %r" % (p1, p2, x))
+        elif not a1 and a2:
+            print("Accepted not by %r but by %r: %r" % (p1, p2, x))
+        else:
+            print((x, p1, a1, p2, a2))
