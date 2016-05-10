@@ -306,6 +306,11 @@ def _parse_nfa(s):
        4 a-> 2
        5 b-> 2
     >>> _print_nfa(_parse_nfa("(a*|b)"))
+     A 0 
+    IA 1 a-> 2 b-> 0
+     A 2 a-> 2
+       3 a-> 2
+       4 b-> 0
     """
     Q = []
     Sigma = set()
@@ -422,6 +427,13 @@ def rename(Q, Sigma, q0, delta, A):
 def _regex_fa(s):
     """
     >>> _print_machine(_regex_fa("(a|b)b*c"))
+       1 a-> 1 b-> 1 c-> 1
+    I  2 a-> 3 b-> 3 c-> 1
+       3 a-> 1 b-> 3 c-> 4
+     A 4 a-> 1 b-> 1 c-> 1
+    >>> _print_machine(_regex_fa("bab"))
+    >>> _print_machine(_regex_fa("ba*b"))
+    >>> _print_machine(_regex_fa("(b|a*)*b"))
     """
     Q, Sigma, q0, delta, A = _parse_nfa(s)
     Q, Sigma, q0, delta, A = determinize(Q, Sigma, q0, delta, A)
