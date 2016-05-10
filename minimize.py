@@ -428,3 +428,31 @@ def _regex_fa(s):
     Q, Sigma, q0, delta, A = rename(Q, Sigma, q0, delta, A)
     Q, Sigma, q0, delta, A = minimize(Q, Sigma, q0, delta, A)
     return Q, Sigma, q0, delta, A
+
+
+def matches(Q, Sigma, q0, delta, A, x):
+    """
+    >>> Q, Sigma, q0, delta, A = _regex_fa("(a|b)b*c")
+    >>> matches(Q, Sigma, q0, delta, A, "")
+    False
+    >>> matches(Q, Sigma, q0, delta, A, "a")
+    False
+    >>> matches(Q, Sigma, q0, delta, A, "ac")
+    True
+    >>> matches(Q, Sigma, q0, delta, A, "bc")
+    True
+    >>> matches(Q, Sigma, q0, delta, A, "cc")
+    False
+    >>> matches(Q, Sigma, q0, delta, A, "abc")
+    True
+    >>> matches(Q, Sigma, q0, delta, A, "bbc")
+    True
+    >>> matches(Q, Sigma, q0, delta, A, "abbbbc")
+    True
+    >>> matches(Q, Sigma, q0, delta, A, "bbbbbc")
+    True
+    """
+    q = q0
+    for i in range(len(x)):
+        q = delta[q, x[i]]
+    return q in A
