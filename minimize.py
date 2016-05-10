@@ -358,12 +358,11 @@ def _parse_nfa(s):
 
     def rep(m):
         def r(next):
-            # TODO handle this properly...
             q = len(Q)
             Q.append(q)
             if next in A:
                 A.add(q)
-            p = m(next)
+            p = m(q)
             for sigma in Sigma:
                 delta[q, sigma] = (
                     delta.get((next, sigma), []) +
