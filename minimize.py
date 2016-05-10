@@ -350,6 +350,9 @@ def _parse_nfa(s):
             for sigma in Sigma:
                 delta[q, sigma] = [a for m in qs
                                    for a in delta.get((m, sigma), [])]
+            for m in qs:
+                if m in A:
+                    A.add(q)
             return q
         return r
 
