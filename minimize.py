@@ -234,7 +234,7 @@ def _print_nfa(M):
         print('%s%s %s %s' %
               (init, acc, q,
                ' '.join('%s-> %s' % (sigma, r)
-                        for sigma in sorted(Sigma)
+                        for sigma in sorted(Sigma) + [""]
                         for r in delta.get((q, sigma), []))))
 
 
@@ -321,13 +321,13 @@ def _parse_nfa(s):
      A 0 
        1 c-> 0
        2 b-> 1
-    I  3 a-> 2 b-> 2
+    I  3 -> 4 -> 5
        4 a-> 2
        5 b-> 2
     >>> _print_nfa(_parse_nfa("(a*|b)"))
      A 0 
-    IA 1 a-> 2 b-> 0
-     A 2 a-> 2
+    I  1 -> 2 -> 4
+       2 -> 0 -> 3
        3 a-> 2
        4 b-> 0
     """
@@ -359,24 +359,11 @@ def _parse_nfa(s):
             return next
         return r
 
-    def all(ms):
-        def r(next):
-            for m in reversed(ms):
-                next = m(next)
-            return next
-        return r
-
     def any(ms):
         def r(next):
             q = len(Q)
             Q.append(q)
-            qs = [m(next) for m in ms]
-            for sigma in Sigma:
-                delta[q, sigma] = [a for m in qs
-                                   for a in delta.get((m, sigma), [])]
-            for m in qs:
-                if m in A:
-                    A.add(q)
+            delta[q, ''] = [m(next) for m in ms]
             return q
         return r
 
@@ -384,20 +371,39 @@ def _parse_nfa(s):
         def r(next):
             q = len(Q)
             Q.append(q)
-            if next in A:
-                A.add(q)
             p = m(q)
-            for sigma in Sigma:
-                delta[q, sigma] = (
-                    delta.get((next, sigma), []) +
-                    delta.get((p, sigma), []))
+            delta[q, ''] = [next, p]
             return q
         return r
 
     q0 = _parse(s, empty, character, all, any, rep)(qa)
     delta = {(q, sigma): frozenset(delta.get((q, sigma), []))
-             for q in Q for sigma in Sigma}
+             for q in Q for sigma in sorted(Sigma) + ['']}
     return Q, Sigma, q0, delta, A
+
+
+def lambda_elimination(Q, Sigma, q0, delta, A):
+    delta_prime = {}
+    A_prime = set()
+    for p in Q:
+        closure = {p}
+        next = [p]
+        while len(next) > 0:
+            q = next[0]
+            next[0:1] = []
+            if (q, '') in delta:
+                for r in delta[q, '']:
+                    if r not in closure:
+                        closure.add(r)
+                        next.append(r)
+        for sigma in Sigma:
+            delta_prime[p, sigma] = []
+            for q in closure:
+                delta_prime[p, sigma].extend(delta[q, sigma])
+        for q in closure:
+            if q in A:
+                A_prime.add(p)
+    return Q, Sigma, q0, delta_prime, A_prime
 
 
 def determinize(Q, Sigma, q0, delta, A):
@@ -450,11 +456,9 @@ def _regex_fa(s):
     I  2 a-> 3 b-> 3 c-> 1
        3 a-> 1 b-> 3 c-> 4
      A 4 a-> 1 b-> 1 c-> 1
-    >>> _print_machine(_regex_fa("bab"))
-    >>> _print_machine(_regex_fa("ba*b"))
-    >>> _print_machine(_regex_fa("(b|a*)*b"))
     """
     Q, Sigma, q0, delta, A = _parse_nfa(s)
+    Q, Sigma, q0, delta, A = lambda_elimination(Q, Sigma, q0, delta, A)
     Q, Sigma, q0, delta, A = determinize(Q, Sigma, q0, delta, A)
     Q, Sigma, q0, delta, A = rename(Q, Sigma, q0, delta, A)
     Q, Sigma, q0, delta, A = minimize(Q, Sigma, q0, delta, A)
