@@ -166,7 +166,6 @@ PATTERNS = [
     ("print(v)", r"\text{output $#v$}"),
     ("{}", r"\text{empty dictionary}"),
     ("S - {x}", r"#S \setminus \{#x\}"),
-    ("{x, y}", r"\{#x, #y\}"),
     ("True", r"\top "),
     ("False", r"\bot "),
     ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
@@ -506,6 +505,9 @@ class Visitor(VisitorBase):
             print(r'\end{pmatrix}')
         else:
             self.visit_Tuple(node, r'\langle ', r'\rangle ')
+
+    def visit_Set(self, node):
+        self.visit_Tuple(node, r'\{', r'\}')
 
     def visit_Tuple(self, node, left='(', right=')'):
         print(left, end='')
