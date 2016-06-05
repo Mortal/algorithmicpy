@@ -346,9 +346,12 @@ class Visitor(VisitorBase):
         print(r'\providecommand{\eq}{=}')
         print(r'\providecommand{\isprefix}{\text{ is prefix of }}')
         print(r'\providecommand{\emptystring}{\text{empty string}}')
+        po_pattern = Pattern.compile('PATTERNS = p', globals={'PATTERNS'})
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
                 self.visit(child)
+            elif po_pattern.match(child):
+                self.extend_patterns(ast.literal_eval(child.value))
             # else:
             #     print(r'\begin{algorithmic}[1]')
             #     self.visit(child)
