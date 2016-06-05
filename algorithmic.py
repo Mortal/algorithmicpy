@@ -186,6 +186,7 @@ VARS = {
     'sigma': r'\sigma ',
     'Sigma': r'\Sigma ',
     'delta': r'\delta ',
+    'pi': r'\pi ',
 }
 
 
