@@ -190,17 +190,17 @@ VARS = {
 }
 
 
-def str_sub(sub, expr, matches, print, visit):
+def str_sub(repl, expr, matches, print, visit):
     i = 0
-    for mo in re.finditer('#(\w+)', sub):
+    for mo in re.finditer('#(\w+)', repl):
         j = mo.start(0)
         if i != j:
-            print(sub[i:j], end='')
+            print(repl[i:j], end='')
         i = mo.end(0)
         visit(matches[mo.group(1)])
-    j = len(sub)
+    j = len(repl)
     if i != j:
-        print(sub[i:j], end='')
+        print(repl[i:j], end='')
     if not expr:
         print('')
     return True
