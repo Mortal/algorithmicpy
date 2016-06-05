@@ -1,5 +1,7 @@
 GLOBALS = 'inf'.split()
-PATTERNS = [('inf', r'\infty')]
+PATTERNS = [
+    ('inf', r'\infty'),
+]
 
 
 def lower_bound(L, v):
