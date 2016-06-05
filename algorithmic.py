@@ -138,15 +138,12 @@ def pattern_match_rec(a, b, globals, bindings):
 
 
 PATTERNS = [
-    ("inf = float('inf')",
-     r"\STATE let ``$\infty$'' be positive infinity"),
     ("float('inf')", r"\infty"),
     ("None", r"\textsc{nil}"),
     ("a // b", r"\lfloor #a / #b \rfloor "),
     ("len(a)", r"|#a|"),
     ("min(a, b)", r"\min\{#a, #b\}"),
     ("max(a, b)", r"\max\{#a, #b\}"),
-    ("inf", r'\infty '),
     ("a[0:0] = b", r"\STATE insert $#b$ at the beginning of $#a$"),
     ("a[i:i] = b", r"\STATE insert $#b$ just before $#a[#i]$"),
     ("a[0:1] = []", r"\STATE remove first element of $#a$"),
@@ -179,7 +176,7 @@ PATTERNS = [
     ('x.reverse()', r'\text{reverse $#x$}'),
 ]
 
-GLOBALS = 'len min max inf float print set range'.split()
+GLOBALS = 'len min max float print set range'.split()
 
 VARS = {
     'sigma': r'\sigma ',

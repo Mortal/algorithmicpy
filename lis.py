@@ -1,3 +1,7 @@
+GLOBALS = 'inf'.split()
+PATTERNS = [('inf', r'\infty')]
+
+
 def lower_bound(L, v):
     """
     >>> lower_bound([1, 2, 3, 4], 3)
