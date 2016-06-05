@@ -154,12 +154,6 @@ PATTERNS = [
      r"\text{an array of $#n$ zeros}"),
     ("print(v)", r"\text{output $#v$}"),
     ("{}", r"\text{empty dictionary}"),
-    ("True", r"\top "),
-    ("False", r"\bot "),
-    ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
-    ('set()', r'\emptyset '),
-    ('s.add(x)', r'#s = #s \cup \{#x\}'),
-    ('s.union(t)', r'#s \cup #t'),
 ]
 
 GLOBALS = 'len min max float print set range'.split()

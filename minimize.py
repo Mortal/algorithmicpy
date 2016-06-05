@@ -8,6 +8,12 @@ PATTERNS = [
     ('Set(a, b)', r'\{#a, #b\}'),
     ("a[0:1] = []", r"\STATE remove first element of $#a$"),
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
+    ("True", r"\top "),
+    ("False", r"\bot "),
+    ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
+    ('set()', r'\emptyset '),
+    ('s.add(x)', r'#s = #s \cup \{#x\}'),
+    ('s.union(t)', r'#s \cup #t'),
 ]
 
 
