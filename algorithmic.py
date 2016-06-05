@@ -138,7 +138,7 @@ def pattern_match_rec(a, b, unify=None):
         except ValueError:
             return False
     return all(pattern_match_rec(getattr(a, f), getattr(b, f), unify)
-               for f in a._fields)
+               for f in a._fields if f not in {'ctx'})
 
 
 PATTERNS = [
