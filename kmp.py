@@ -1,3 +1,9 @@
+PATTERNS = [
+    ('P[:n]', '#P _{#n}'),
+    ('s.endswith(t)', r'#t \sqsupset #s'),
+]
+
+
 def compute_prefix(P):
     """
     >>> compute_prefix('abcababcabc')
