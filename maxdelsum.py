@@ -1,3 +1,11 @@
+PATTERNS = [
+    ("[[0] * m for i in range(n)]",
+     r"\text{a $#n \times #m$ matrix of zeros}"),
+    ("[0] * n",
+     r"\text{an array of $#n$ zeros}"),
+]
+
+
 A = [[-9,  5,  7,  7,  3, -9,  3,  2],
      [ 8, -9,  2,  4,  9, -7,  4,  0],
      [-2, -1,  6,  9, -3, -9,  9, -9],

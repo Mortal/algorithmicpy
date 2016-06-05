@@ -145,10 +145,6 @@ PATTERNS = [
     ("min(a, b)", r"\min\{#a, #b\}"),
     ("max(a, b)", r"\max\{#a, #b\}"),
     ("a.append(b)", r"\text{insert $#b$ at the end of $#a$}"),
-    ("[[0] * m for i in range(n)]",
-     r"\text{a $#n \times #m$ matrix of zeros}"),
-    ("[0] * n",
-     r"\text{an array of $#n$ zeros}"),
     ("print(v)", r"\text{output $#v$}"),
     ("{}", r"\text{empty dictionary}"),
 ]
