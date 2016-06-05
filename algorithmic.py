@@ -574,7 +574,7 @@ PREAMBLE = r"""
 \usepackage[T1]{fontenc}
 \usepackage[noend]{algorithmic}
 \usepackage{algorithm}
-\usepackage{amsmath}
+\usepackage{amsmath,amssymb}
 \begin{document}
 """.strip()
 
