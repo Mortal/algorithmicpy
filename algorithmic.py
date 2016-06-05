@@ -362,6 +362,11 @@ class Visitor(VisitorBase):
             self.visit(node.value)
             print('$')
 
+    def visit_Assert(self, node):
+        print(r'\STATE $\{', end='')
+        self.visit(node.test)
+        print('\}$')
+
     def visit_Return(self, node):
         print(r'\RETURN', end=' ')
         print('$', end='')
