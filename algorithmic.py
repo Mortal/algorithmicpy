@@ -177,6 +177,7 @@ PATTERNS = [
     ('s.union(t)', r'#s \cup #t'),
     ('set(itertools.product(x, y))', r'#x \times #y'),
     ('x.reverse()', r'\text{reverse $#x$}'),
+    ('s.endswith(t)', r'#t\isprefix{}#s'),
 ]
 
 GLOBALS = 'len min max inf float print set Set range'.split()
@@ -317,6 +318,7 @@ class Visitor(VisitorBase):
 
     def visit_Module(self, node):
         print(r'\providecommand{\eq}{=}')
+        print(r'\providecommand{\isprefix}{\text{ is prefix of }}')
         print(r'\providecommand{\emptystring}{\text{empty string}}')
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
