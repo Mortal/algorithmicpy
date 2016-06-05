@@ -68,19 +68,41 @@ def node_eq(a, b):
 
 def pattern_match(a, b, globals=None):
     """
-    >>> def pattern_match_help(a, b, **kwargs):
-    ...     m = pattern_match(ast.parse(a, mode='eval').body,
-    ...                       ast.parse(b, mode='eval').body, **kwargs)
+    Return a dict mapping each ast.Name in `a` to an ast.AST node in `b`,
+    or None if `b` does not have the same shape as `a`.
+
+    Example of positive match where `x` is matched by `(2+4)`:
+
+    >>> print(pattern_match(ast.parse('x / 2'), ast.parse('(2+4) / 2')))
+    ... # doctest: +ELLIPSIS
+    {'x': <_ast.BinOp object at 0x...>}
+
+    Example of negative match:
+
+    >>> print(pattern_match(ast.parse('2 + 2'), ast.parse('4')))
+    None
+
+    Some more examples, using a helper function to dump the ASTs:
+
+    >>> def pattern_match_help(a, b, globals):
+    ...     m = pattern_match(ast.parse(a), ast.parse(b), globals)
     ...     if m is None:
-    ...         return
-    ...     return [(k, type(m[k]).__name__) for k in sorted(m.keys())]
-    >>> pattern_match_help('a // b', 'len(foo) // 42')
-    [('a', 'Call'), ('b', 'Num')]
-    >>> pattern_match_help('len(a)', 'len([1, 2, 3])', globals=['len'])
-    [('a', 'List')]
-    >>> pattern_match_help('[][i:i]', '[][i+1:i+1]', globals=['len'])
-    [('i', 'BinOp')]
+    ...         return print("No match")
+    ...     for k in sorted(m.keys()):
+    ...         print("%s: %s" % (k, ast.dump(m[k], annotate_fields=False)))
+
+    >>> pattern_match_help('a // 42', 'len(foo) // 42', [])
+    a: Call(Name('len', Load()), [Name('foo', Load())], [])
+    >>> pattern_match_help('len(a)', 'len([1, 2, 3])', ['len'])
+    a: List([Num(1), Num(2), Num(3)], Load())
+    >>> pattern_match_help('[][i:j]', '[][i+1:-i]', [])
+    i: BinOp(Name('i', Load()), Add(), Num(1))
+    j: UnaryOp(USub(), Name('i', Load()))
+    >>> pattern_match_help('i < j', '1 < 2 < 3', [])
+    No match
     """
+
+    assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
     if globals is None:
         globals = []
     bindings = {}
