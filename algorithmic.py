@@ -364,12 +364,16 @@ class Visitor(VisitorBase):
         print(r'\providecommand{\eq}{=}')
         print(r'\providecommand{\emptystring}{\text{empty string}}')
         po_pattern = Pattern.compile('PATTERNS = p', globals={'PATTERNS'})
+        po_globals = Pattern.compile('GLOBALS = s.split()', globals={'GLOBALS'})
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
                 self.visit(child)
             elif po_pattern.match(child):
                 p = ast.literal_eval(po_pattern.match(child)['p'])
                 self.extend_patterns(p)
+            elif po_globals.match(child):
+                s = ast.literal_eval(po_globals.match(child)['s']).split()
+                self.globals = self.globals | frozenset(s)
             # else:
             #     print(r'\begin{algorithmic}[1]')
             #     self.visit(child)
