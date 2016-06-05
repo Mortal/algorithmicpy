@@ -7,34 +7,32 @@ def compute_prefix(P):
     for i in range(1, len(P)):
         # Compute k = pi[i] such that k < i and P[:k+1] is a suffix of P[:i+1]
         k = pi[i-1]
-        assert k+1 < i and P[:k+1] == P[i-(k+1):i]
-        while k > -1 and P[k+1] != P[i]:
+        assert -1 <= k < i-1 and P[:i].endswith(P[:k+1])
+        while k > -1 and P[i] != P[k+1]:
             k = pi[k]
-        assert k+1 < i and P[:k+1] == P[i-(k+1):i]
-        assert k == -1 or P[k+1] == P[i]
+        assert -1 <= k < i-1 and P[:i].endswith(P[:k+1])
+        assert k == -1 or P[i] == P[k+1]
         if P[k+1] == P[i]:
             pi.append(k + 1)
-            assert k + 1 < i and P[:k+2] == P[i+1-(k+2):i+1], (i, k, P)
+            assert k + 1 < i and P[:i+1].endswith(P[:k+2])
         else:
             pi.append(-1)
-        assert pi[i] < i and P[:pi[i]+1] == P[i+1-(pi[i]+1):i+1]
+        assert -1 <= pi[i] < i and P[:i+1].endswith(P[:pi[i]+1])
     return pi
 
 
 def find_matches(T, P, pi, report):
-    i = 0
     k = -1
-    while i < len(T):
-        assert P[:k+1] == T[i-(k+1):i]
+    for i in range(len(T)):
+        assert T[:i].endswith(P[:k+1])
         while k > -1 and T[i] != P[k+1]:
             k = pi[k]
         if T[i] == P[k+1]:
             k = k + 1
-        assert P[:k+1] == T[i-k:i+1]
+        assert T[:i+1].endswith(P[:k+1])
         if k+1 == len(P):
             report(i - k)
             k = pi[k]
-        i = i + 1
 
 
 def kmp(T, P):
