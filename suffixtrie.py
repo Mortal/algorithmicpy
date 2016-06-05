@@ -1,3 +1,11 @@
+GLOBALS = 'Node'.split()
+PATTERNS = [
+    ('Node(i, i)', r'\text{node representing the empty suffix}'),
+    ('Node(i, len(x))', r'\text{node representing $#x[#i \ldots end]$}'),
+    ('Node(i, j)', r'\text{node representing $x[#i \ldots #j-1]$}'),
+    ('x = list(x) + [None]', r"\STATE \text{add sentinel character ``\$'' to $#x$}"),
+]
+
 class Node:
     def __init__(self, i, j, c=None):
         self.i = i
@@ -21,9 +29,7 @@ class Node:
 
 def common_prefix(root, x, i):
     k = 0
-    while root.i + k < root.j and i + k < len(x):
-        if x[root.i + k] != x[i + k]:
-            break
+    while root.i + k < root.j and i + k < len(x) and x[root.i + k] == x[i + k]:
         k += 1
     return k
 
@@ -57,18 +63,18 @@ def insert(root, x, i):
         # print(root)
 
 
-def node_name(x, n):
-    return '%s,%s' % (node_label(x, n), ''.join('$' if i == len(x) else x[i] for i in range(n.i, n.j)))
+def _node_name(x, n):
+    return '%s,%s' % (_node_label(x, n), ''.join('$' if i == len(x) else x[i] for i in range(n.i, n.j)))
 
 
-def node_label(x, n):
+def _node_label(x, n):
     if n.i == n.j:
         return ''
     else:
         return '%s,%s' % (n.i, n.j - 1)
 
 
-def print_trie(root, x, path=''):
+def _print_trie(root, x, path=''):
     # print("VISIT", root)
     # print('RECURSE', ' '.join(map(str, root.c.keys())))
     print("subgraph \"cluster_%s\" { color=white; " % (path,))
@@ -77,30 +83,29 @@ def print_trie(root, x, path=''):
     else:
         shape = 'box'
     print("\"%s%s\" [label=\"%s\", margin=0, shape=%s, fontsize=22];" %
-          (path, node_name(x, root), node_label(x, root), shape))
+          (path, _node_name(x, root), _node_label(x, root), shape))
     for k, c in root.c.items():
         # print("RECURSE", k)
-        print_trie(c, x, path + (k or '$'))
+        _print_trie(c, x, path + (k or '$'))
     # print('EDGE', ' '.join(map(str, root.c.keys())))
     for k, c in root.c.items():
         # print("EDGE", k)
         print("\"%s%s\" -> \"%s%s%s\" [arrowhead=none];" %
-              (path, node_name(x, root), path, k or '$', node_name(x, c)))
+              (path, _node_name(x, root), path, k or '$', _node_name(x, c)))
     print("}")
     # print("DONE", root)
 
 
 def suffix_trie(x):
-    n = len(x)
     x = list(x) + [None]
-    root = Node(n + 1, n + 1)
-    for i in range(1, n + 1):
-        insert(root, x, n - i)
+    root = Node(len(x), len(x))
+    for i in range(1, len(x)):
+        insert(root, x, len(x) - 1 - i)
     return root
 
 
 x = 'minimize minime'
 print('digraph {')
 print('graph [pad="0", ranksep="0.0", nodesep="0.0", splines=line];')
-print_trie(suffix_trie(x), x)
+_print_trie(suffix_trie(x), x)
 print('}')
