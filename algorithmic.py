@@ -60,10 +60,7 @@ def node_eq(a, b):
     >>> node_eq(left, right)
     True
     """
-    m = pattern_match(a, b)
-    if m is None:
-        return False
-    return all(k == v.id for k, v in m.items())
+    return bool(pattern_match_rec(a, b))
 
 
 def pattern_match(a, b, globals=None):
@@ -104,27 +101,33 @@ def pattern_match(a, b, globals=None):
     a: Name('a', Load())
     """
 
-    assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
     if globals is None:
         globals = []
     bindings = {}
-    result = pattern_match_rec(a, b, globals, bindings)
-    if not result:
-        return None
-    return bindings
+
+    def unify(name, value):
+        if name.id in globals:
+            binding = name
+        else:
+            binding = bindings.setdefault(name.id, value)
+        return node_eq(binding, value)
+
+    result = pattern_match_rec(a, b, unify)
+    if result:
+        return bindings
 
 
-def pattern_match_rec(a, b, globals, bindings):
-    args = (globals, bindings)
-    if isinstance(a, ast.Name) and a.id not in globals:
-        return node_eq(b, bindings.setdefault(a.id, b))
+def pattern_match_rec(a, b, unify=None):
+    if unify and isinstance(a, ast.Name):
+        return unify(a, b)
     if type(a) != type(b):
         return False
     if isinstance(a, (int, str, bool)) or a is None:
         return a == b
     if isinstance(a, list):
         return (len(a) == len(b) and
-                all(pattern_match_rec(c, d, *args) for c, d in zip(a, b)))
+                all(pattern_match_rec(c, d, unify) for c, d in zip(a, b)))
+    assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
     try:
         a_lit = ast.literal_eval(a)
     except ValueError:
@@ -134,7 +137,7 @@ def pattern_match_rec(a, b, globals, bindings):
             return a_lit == ast.literal_eval(b)
         except ValueError:
             return False
-    return all(pattern_match_rec(getattr(a, f), getattr(b, f), *args)
+    return all(pattern_match_rec(getattr(a, f), getattr(b, f), unify)
                for f in a._fields)
 
 
