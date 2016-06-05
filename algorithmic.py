@@ -5,6 +5,7 @@ import sys
 import argparse
 import functools
 import subprocess
+import collections
 
 
 class VisitorBase(ast.NodeVisitor):
@@ -642,6 +643,30 @@ def main():
             subprocess.check_call(
                 ('latexmk', '-pdf', output_filename),
                 stdin=subprocess.DEVNULL)
+
+
+def pattern_stats():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', nargs='+')
+    args = parser.parse_args()
+
+    def noop(*args, **kwargs):
+        pass
+
+    pattern_usage = collections.defaultdict(list)
+
+    for filename in args.filename:
+        with open(filename) as fp:
+            source = fp.read()
+        o = ast.parse(source, filename, 'exec')
+        p = collections.defaultdict(int)
+        visitor = Visitor(source, print=noop, pattern_stats=p)
+        visitor.visit(o)
+        for i in p.keys():
+            pattern_usage[i - len(visitor.patterns)].append(filename)
+
+    for i, p in enumerate(visitor.patterns):
+        print("%s\t%r" % (','.join(pattern_usage[i - len(visitor.patterns)]), p))
 
 
 if __name__ == "__main__":
