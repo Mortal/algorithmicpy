@@ -123,13 +123,11 @@ def pattern_match_rec(a, b, globals, bindings):
         return node_eq(b, bindings.setdefault(a.id, b))
     if type(a) != type(b):
         return False
-    if isinstance(a, (int, str)):
+    if isinstance(a, (int, str, bool)) or a is None:
         return a == b
     if isinstance(a, list):
         return (len(a) == len(b) and
                 all(pattern_match_rec(c, d, *args) for c, d in zip(a, b)))
-    if a is None:
-        return True
     try:
         a_lit = [ast.literal_eval(a)]
     except ValueError:
