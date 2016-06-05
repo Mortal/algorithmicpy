@@ -13,11 +13,11 @@ def compute_prefix(P):
         assert -1 <= k < i-1 and P[:i].endswith(P[:k+1])
         assert k == -1 or P[i] == P[k+1]
         if P[k+1] == P[i]:
-            pi.append(k + 1)
-            assert k + 1 < i and P[:i+1].endswith(P[:k+2])
+            k = k + 1
         else:
-            pi.append(-1)
-        assert -1 <= pi[i] < i and P[:i+1].endswith(P[:pi[i]+1])
+            assert k == -1
+        assert k < i and P[:i+1].endswith(P[:k+1])
+        pi.append(k)
     return pi
 
 
