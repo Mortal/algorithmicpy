@@ -226,10 +226,14 @@ def pattern_repl_compile(pattern, repl):
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.patterns = []
+        self.extend_patterns(PATTERNS)
+
+    def extend_patterns(self, patterns):
         self.patterns = [
             pattern_repl_compile(k, v)
-            for k, v in PATTERNS
-        ]
+            for k, v in patterns
+        ] + self.patterns
 
     @staticmethod
     def tex_function_name(name):
