@@ -606,22 +606,23 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--preamble', action='store_true')
     parser.add_argument('-3', '--new-style', action='store_true')
-    parser.add_argument('filename')
+    parser.add_argument('filename', nargs='+')
     args = parser.parse_args()
-    with open(args.filename) as fp:
-        source = fp.read()
-    o = ast.parse(source, args.filename, 'exec')
-    visitor = Visitor(source)
-    if args.preamble:
-        print(PREAMBLE)
-    if args.new_style:
-        print(r'\newcommand{\eq}{==}')
-        print(r'\renewcommand{\gets}{=}')
-        print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
-        print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
-    visitor.visit(o)
-    if args.preamble:
-        print(POSTAMBLE)
+    for filename in args.filename:
+        with open(filename) as fp:
+            source = fp.read()
+        o = ast.parse(source, filename, 'exec')
+        visitor = Visitor(source)
+        if args.preamble:
+            print(PREAMBLE)
+        if args.new_style:
+            print(r'\newcommand{\eq}{==}')
+            print(r'\renewcommand{\gets}{=}')
+            print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
+            print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
+        visitor.visit(o)
+        if args.preamble:
+            print(POSTAMBLE)
 
 
 if __name__ == "__main__":
