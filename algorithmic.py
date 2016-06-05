@@ -59,6 +59,13 @@ def node_eq(a, b):
     >>> left, (right,) = e.left, e.comparators
     >>> node_eq(left, right)
     True
+
+    >>> e, = ast.parse('i = i', mode='single').body
+    >>> isinstance(e, ast.Assign)
+    True
+    >>> (left,), right = e.targets, e.value
+    >>> node_eq(left, right)
+    True
     """
     return bool(pattern_match_rec(a, b))
 
