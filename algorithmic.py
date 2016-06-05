@@ -120,15 +120,7 @@ def pattern_match(a, b, globals=None):
 def pattern_match_rec(a, b, globals, bindings):
     args = (globals, bindings)
     if isinstance(a, ast.Name) and a.id not in globals:
-        try:
-            ex = bindings[a.id]
-        except KeyError:
-            bindings[a.id] = b
-        else:
-            if not node_eq(b, ex):
-                # print("Unification with %s failed" % a.id, file=sys.stderr)
-                return False
-        return True
+        return node_eq(b, bindings.setdefault(a.id, b))
     if type(a) != type(b):
         return False
     if isinstance(a, (int, str)):
