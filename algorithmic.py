@@ -350,7 +350,8 @@ class Visitor(VisitorBase):
             if isinstance(child, ast.FunctionDef):
                 self.visit(child)
             elif po_pattern.match(child):
-                self.extend_patterns(ast.literal_eval(child.value))
+                p = ast.literal_eval(po_pattern.match(child)['p'])
+                self.extend_patterns(p)
             # else:
             #     print(r'\begin{algorithmic}[1]')
             #     self.visit(child)
