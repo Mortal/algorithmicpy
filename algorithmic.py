@@ -1,8 +1,10 @@
+import os
 import re
 import ast
 import sys
 import argparse
 import functools
+import subprocess
 
 
 class VisitorBase(ast.NodeVisitor):
@@ -604,6 +606,7 @@ POSTAMBLE = r"""
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--output-and-compile', action='store_true')
     parser.add_argument('-p', '--preamble', action='store_true')
     parser.add_argument('-3', '--new-style', action='store_true')
     parser.add_argument('filename', nargs='+')
@@ -612,7 +615,14 @@ def main():
         with open(filename) as fp:
             source = fp.read()
         o = ast.parse(source, filename, 'exec')
-        visitor = Visitor(source)
+        if args.output_and_compile:
+            base, ext = os.path.splitext(filename)
+            output_filename = base + '.tex'
+            ofp = open(output_filename, 'w')
+            out_print = functools.partial(print, file=ofp)
+        else:
+            out_print = print
+        visitor = Visitor(source, print=out_print)
         if args.preamble:
             visitor.print(PREAMBLE)
         if args.new_style:
@@ -623,6 +633,11 @@ def main():
         visitor.visit(o)
         if args.preamble:
             visitor.print(POSTAMBLE)
+        if args.output_and_compile:
+            ofp.close()
+            subprocess.check_call(
+                ('latexmk', '-pdf', output_filename),
+                stdin=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":
