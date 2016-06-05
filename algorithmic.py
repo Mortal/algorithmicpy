@@ -106,12 +106,7 @@ def pattern_match(a, b, globals=None):
     if globals is None:
         globals = []
     bindings = {}
-    try:
-        result = pattern_match_rec(a, b, globals, bindings)
-    except Exception:
-        print(ast.dump(a, annotate_fields=False),
-              ast.dump(b, annotate_fields=False), file=sys.stderr)
-        raise
+    result = pattern_match_rec(a, b, globals, bindings)
     if not result:
         return None
     return bindings
