@@ -137,15 +137,8 @@ def pattern_match_rec(a, b, globals, bindings):
             return a_lit == ast.literal_eval(b)
         except ValueError:
             return False
-    for f in a._fields:
-        try:
-            if not pattern_match_rec(getattr(a, f), getattr(b, f), *args):
-                return False
-        except Exception:
-            print(ast.dump(a, annotate_fields=False),
-                  ast.dump(b, annotate_fields=False), file=sys.stderr)
-            raise
-    return True
+    return all(pattern_match_rec(getattr(a, f), getattr(b, f), *args)
+               for f in a._fields)
 
 
 PATTERNS = [
