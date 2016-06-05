@@ -249,6 +249,7 @@ class Pattern:
 
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
+        self.pattern_stats = kwargs.pop('pattern_stats', None)
         self.print = kwargs.pop('print', print)
         super().__init__(*args, **kwargs)
         self.patterns = []
@@ -347,8 +348,10 @@ class Visitor(VisitorBase):
         return Visitor.node_name(node) == name
 
     def visit(self, node):
-        for pattern, repl in self.patterns:
+        for i, (pattern, repl) in enumerate(self.patterns):
             if pattern.sub(node, repl, print=self.print, visit=self.visit):
+                if self.pattern_stats is not None:
+                    self.pattern_stats[i] += 1
                 break
         else:
             super().visit(node)
