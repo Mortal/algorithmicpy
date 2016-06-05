@@ -10,6 +10,7 @@ class Node:
     def __init__(self, i, j, c=None):
         self.i = i
         self.j = j
+        self.suffix_link = None
         if c is None:
             self.c = {}
         else:
@@ -32,6 +33,23 @@ def common_prefix(root, x, i):
     while root.i + k < root.j and i + k < len(x) and x[root.i + k] == x[i + k]:
         k += 1
     return k
+
+
+def search(u, x, i, j, end):
+    while True:
+        if x[i] not in u.c:
+            return u, i
+        v = u.c[x[i]]
+        v_j = end if v.j == len(x) else v.j
+        k = 0
+        while v.i + k < v.j and i + k < j and x[v.i + k] == x[i + k]:
+            k += 1
+        assert v.i + k == v.j or i + k == j or x[v.i + k] != x[i + k]
+        if v.i + k == v.j and i + k < j:
+            u = v
+            i = i + k
+        else:
+            return u, i
 
 
 # map from first char to path
@@ -102,6 +120,45 @@ def suffix_trie(x):
     for i in range(1, len(x)):
         insert(root, x, len(x) - 1 - i)
     return root
+
+
+def suffix_trie_2(x):
+    x = list(x) + [None]
+    end = len(x)
+    root = Node(0, 0)
+    root.c[x[0]] = Node(0, end)
+    j = k = 0
+    y = root
+    y_d = 0
+    # y is the parent of the path corresponding to x[0:i].
+    # y corresponds to the path x[0:y_d], and the child
+    # y.c[x[y_d]]
+    # "root" now represents an implicit suffix tree for x[0:1].
+    for i in range(1, len(x) + 1):
+        assert y.c[x[y_d]] is search(root, x, 0, i, i)[0]
+
+        # Extend "root" to represent an implicit suffix tree for x[0:i+1].
+        # Suffixes x[0:i],...,x[j-1:i] are leaves, so they are
+        # implicitly extended to x[0:i+1],...,x[j-1:i+1].
+        while j < i:
+            if j == 0:
+                # Add path x[0:i+1] implicitly.
+                j = j + 1
+            elif j == 1:
+                # Add path x[1:i+1].
+                if y is root:
+                    v, v_i = search(root, x, j, i, i)
+                else:
+                    v, v_i = search(y.suffix_link, x, j + y_d, i, i)
+                    v = y.suffix_link
+                    v_i = y_d
+        v = first_suffix_node
+        # v is the path x[j:k].
+        # v is the parent of the path with label x[j:i].
+        # v is either the root (j == k) or it has a suffix link (j < k).
+        assert (v is root or v.suffix_link is not None)
+        if v is root:
+            v = search(root, x, j, i+1)
 
 
 x = 'minimize minime'
