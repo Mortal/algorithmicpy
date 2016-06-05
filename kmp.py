@@ -1,6 +1,6 @@
 def compute_prefix(P):
     """
-    >>> compute_prefix('abbababbabb')
+    >>> compute_prefix('abcababcabc')
     [-1, -1, -1, 0, 1, 0, 1, 2, 3, 4, 2]
     """
     pi = [-1]
@@ -41,7 +41,7 @@ def kmp(T, P):
     """
     >>> kmp('fooobar', 'oo')
     [1, 2]
-    >>> kmp('abbabbababbabbababbabb', 'abbababbabb')
+    >>> kmp('abcabcababcabcababcabc', 'abcababcabc')
     [3, 11]
     >>> kmp('aaa', 'a')
     [0, 1, 2]
