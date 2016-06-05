@@ -611,6 +611,7 @@ def main():
     parser.add_argument('-3', '--new-style', action='store_true')
     parser.add_argument('filename', nargs='+')
     args = parser.parse_args()
+    output_preamble = args.preamble or args.output_and_compile
     for filename in args.filename:
         with open(filename) as fp:
             source = fp.read()
@@ -623,7 +624,7 @@ def main():
         else:
             out_print = print
         visitor = Visitor(source, print=out_print)
-        if args.preamble:
+        if output_preamble:
             visitor.print(PREAMBLE)
         if args.new_style:
             visitor.print(r'\newcommand{\eq}{==}')
@@ -631,7 +632,7 @@ def main():
             visitor.print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
             visitor.print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
         visitor.visit(o)
-        if args.preamble:
+        if output_preamble:
             visitor.print(POSTAMBLE)
         if args.output_and_compile:
             ofp.close()
