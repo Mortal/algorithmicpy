@@ -6,6 +6,8 @@ PATTERNS = [
     ('Set()', r'\emptyset '),
     ('Set(a)', r'\{#a\}'),
     ('Set(a, b)', r'\{#a, #b\}'),
+    ("a[0:1] = []", r"\STATE remove first element of $#a$"),
+    ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
 ]
 
 
