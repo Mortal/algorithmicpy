@@ -2,6 +2,7 @@ GLOBALS = 'inf'.split()
 PATTERNS = [
     ('inf', r'\infty'),
     ("a[-1:] = []", r"\STATE remove last element of $#a$"),
+    ("a[-1]", r"#a[\text{end}]"),
 ]
 
 
