@@ -206,21 +206,34 @@ def str_sub(repl, expr, matches, print, visit):
     return True
 
 
-def pattern_compile(pattern):
-    node = ast.parse(pattern, mode='single').body[0]
-    if isinstance(node, ast.Expr):
-        node = node.value
-        is_expr = True
-    else:
-        is_expr = False
-    return node, is_expr
+class Pattern:
+    def __init__(self, node, is_expr, globals):
+        assert isinstance(node, ast.AST)
+        assert isinstance(is_expr, bool)
+        self.node = node
+        self.is_expr = is_expr
+        self.globals = globals
 
+    @classmethod
+    def compile(cls, pattern, *, globals=None):
+        node = ast.parse(pattern, mode='single').body[0]
+        if isinstance(node, ast.Expr):
+            node = node.value
+            is_expr = True
+        else:
+            is_expr = False
+        return cls(node, is_expr, globals)
 
-def pattern_repl_compile(pattern, repl):
-    node, is_expr = pattern_compile(pattern)
-    if isinstance(repl, str):
-        repl = functools.partial(str_sub, repl, is_expr)
-    return pattern, repl
+    def match(self, target):
+        return pattern_match(self.node, target, globals=self.globals)
+
+    def sub(self, target, repl, **kwargs):
+        mo = self.match(target)
+        if mo is not None:
+            if isinstance(repl, str):
+                return str_sub(repl, self.is_expr, mo, **kwargs)
+            else:
+                return repl(**kwargs)
 
 
 class Visitor(VisitorBase):
@@ -231,7 +244,7 @@ class Visitor(VisitorBase):
 
     def extend_patterns(self, patterns):
         self.patterns = [
-            pattern_repl_compile(k, v)
+            (Pattern.compile(k, globals=GLOBALS), v)
             for k, v in patterns
         ] + self.patterns
 
@@ -321,11 +334,9 @@ class Visitor(VisitorBase):
         return Visitor.node_name(node) == name
 
     def visit(self, node):
-        for pat, sub in self.patterns:
-            matches = pattern_match(pat, node, globals=GLOBALS)
-            if matches is not None:
-                if sub(matches, print=print, visit=self.visit):
-                    break
+        for pattern, repl in self.patterns:
+            if pattern.sub(node, repl, print=print, visit=self.visit):
+                break
         else:
             super().visit(node)
 
