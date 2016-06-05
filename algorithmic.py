@@ -129,15 +129,14 @@ def pattern_match_rec(a, b, globals, bindings):
         return (len(a) == len(b) and
                 all(pattern_match_rec(c, d, *args) for c, d in zip(a, b)))
     try:
-        a_lit = [ast.literal_eval(a)]
+        a_lit = ast.literal_eval(a)
     except ValueError:
-        a_lit = None
-    try:
-        b_lit = [ast.literal_eval(b)]
-    except ValueError:
-        b_lit = None
-    if a_lit == b_lit and a_lit is not None:
-        return True
+        pass
+    else:
+        try:
+            return a_lit == ast.literal_eval(b)
+        except ValueError:
+            return False
     for f in a._fields:
         try:
             if not pattern_match_rec(getattr(a, f), getattr(b, f), *args):
