@@ -173,16 +173,13 @@ PATTERNS = [
     ("False", r"\bot "),
     ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
     ('set()', r'\emptyset '),
-    ('Set()', r'\emptyset '),
-    ('Set(a)', r'\{#a\}'),
-    ('Set(a, b)', r'\{#a, #b\}'),
     ('s.add(x)', r'#s = #s \cup \{#x\}'),
     ('s.union(t)', r'#s \cup #t'),
     ('set(itertools.product(x, y))', r'#x \times #y'),
     ('x.reverse()', r'\text{reverse $#x$}'),
 ]
 
-GLOBALS = 'len min max inf float print set Set range'.split()
+GLOBALS = 'len min max inf float print set range'.split()
 
 VARS = {
     'sigma': r'\sigma ',

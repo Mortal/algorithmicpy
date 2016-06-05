@@ -1,6 +1,14 @@
 import itertools
 
 
+GLOBALS = 'Set'.split()
+PATTERNS = [
+    ('Set()', r'\emptyset '),
+    ('Set(a)', r'\{#a\}'),
+    ('Set(a, b)', r'\{#a, #b\}'),
+]
+
+
 def reachable_states(Q, Sigma, q0, delta):
     """
     >>> Q = {1, 2, 3}
