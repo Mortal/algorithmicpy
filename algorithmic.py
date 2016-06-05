@@ -206,20 +206,30 @@ def str_sub(sub, expr, matches, print, visit):
     return True
 
 
+def pattern_compile(pattern):
+    node = ast.parse(pattern, mode='single').body[0]
+    if isinstance(node, ast.Expr):
+        node = node.value
+        is_expr = True
+    else:
+        is_expr = False
+    return node, is_expr
+
+
+def pattern_repl_compile(pattern, repl):
+    node, is_expr = pattern_compile(pattern)
+    if isinstance(repl, str):
+        repl = functools.partial(str_sub, repl, is_expr)
+    return pattern, repl
+
+
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.patterns = []
-        for k, v in PATTERNS:
-            e = ast.parse(k, mode='single').body[0]
-            if isinstance(e, ast.Expr):
-                e = e.value
-                expr = True
-            else:
-                expr = False
-            if isinstance(v, str):
-                v = functools.partial(str_sub, v, expr)
-            self.patterns.append((e, v))
+        self.patterns = [
+            pattern_repl_compile(k, v)
+            for k, v in PATTERNS
+        ]
 
     @staticmethod
     def tex_function_name(name):
