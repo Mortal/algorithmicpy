@@ -100,6 +100,8 @@ def pattern_match(a, b, globals=None):
     j: UnaryOp(USub(), Name('i', Load()))
     >>> pattern_match_help('i < j', '1 < 2 < 3', [])
     No match
+    >>> pattern_match_help('a == a == a', 'a == a == a', [])
+    a: Name('a', Load())
     """
 
     assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
