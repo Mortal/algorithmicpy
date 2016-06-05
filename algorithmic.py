@@ -614,15 +614,15 @@ def main():
         o = ast.parse(source, filename, 'exec')
         visitor = Visitor(source)
         if args.preamble:
-            print(PREAMBLE)
+            visitor.print(PREAMBLE)
         if args.new_style:
-            print(r'\newcommand{\eq}{==}')
-            print(r'\renewcommand{\gets}{=}')
-            print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
-            print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
+            visitor.print(r'\newcommand{\eq}{==}')
+            visitor.print(r'\renewcommand{\gets}{=}')
+            visitor.print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
+            visitor.print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
         visitor.visit(o)
         if args.preamble:
-            print(POSTAMBLE)
+            visitor.print(POSTAMBLE)
 
 
 if __name__ == "__main__":
