@@ -239,11 +239,12 @@ class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.patterns = []
+        self.globals = frozenset(GLOBALS)
         self.extend_patterns(PATTERNS)
 
     def extend_patterns(self, patterns):
         self.patterns = [
-            (Pattern.compile(k, globals=GLOBALS), v)
+            (Pattern.compile(k, globals=self.globals), v)
             for k, v in patterns
         ] + self.patterns
 
