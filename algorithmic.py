@@ -212,6 +212,7 @@ class Pattern:
         self.node = node
         self.is_expr = is_expr
         self.globals = globals
+        self.source = None
 
     @classmethod
     def compile(cls, pattern, *, globals=None):
@@ -221,7 +222,16 @@ class Pattern:
             is_expr = True
         else:
             is_expr = False
-        return cls(node, is_expr, globals)
+        po = cls(node, is_expr, globals)
+        po.source = pattern
+        return po
+
+    def __repr__(self):
+        if self.source is not None:
+            return ('Pattern.compile(%r, globals=%r)' %
+                    (self.source, self.globals))
+        else:
+            return '<Pattern>'
 
     def match(self, target):
         return pattern_match(self.node, target, globals=self.globals)
