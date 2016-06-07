@@ -63,8 +63,9 @@ def merge(A, B):
     B[0:0] = [0]
     B.extend([0, +inf])
     S = []
-    i = j = 1
-    while not A[i] == B[j] == +inf:
+    i = 1
+    j = 1
+    while A[i] != +inf or B[j] != +inf:
         if A[i] < B[j]:
             S.extend([A[i], max(A[i+1], B[j-1])])
             i += 2
