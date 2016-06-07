@@ -16,6 +16,13 @@ class Node:
         else:
             self.c = c
 
+    @property
+    def length(self):
+        if self.j is None:
+            return float('inf')
+        else:
+            return self.j - self.i
+
     def __repr__(self):
         return "Node(%r, %r, c=%r)" % (self.i, self.j, self.c)
 
@@ -124,45 +131,56 @@ def suffix_trie(x):
 
 def suffix_trie_2(x):
     x = list(x) + [None]
-    end = len(x)
     root = Node(0, 0)
-    root.c[x[0]] = Node(0, end)
-    j = k = 0
-    y = root
-    y_d = 0
-    # y is the parent of the path corresponding to x[0:i].
-    # y corresponds to the path x[0:y_d], and the child
-    # y.c[x[y_d]]
-    # "root" now represents an implicit suffix tree for x[0:1].
-    for i in range(1, len(x) + 1):
-        assert y.c[x[y_d]] is search(root, x, 0, i, i)[0]
+    root.c[x[0]] = Node(0, None)
+    suffixes = []
 
-        # Extend "root" to represent an implicit suffix tree for x[0:i+1].
-        # Suffixes x[0:i],...,x[j-1:i] are leaves, so they are
-        # implicitly extended to x[0:i+1],...,x[j-1:i+1].
-        while j < i:
-            if j == 0:
-                # Add path x[0:i+1] implicitly.
-                j = j + 1
-            elif j == 1:
-                # Add path x[1:i+1].
-                if y is root:
-                    v, v_i = search(root, x, j, i, i)
+    for i in range(len(x) + 1):
+        # We have constructed the suffix trie for x[0:i].
+        for j, (v, a) in enumerate(suffixes):
+            # a is the number of characters on the path from the root
+            # to the beginning of the node v.
+            prev_suffix_length = i - j
+            # Where in x[v.i:v.j] does suffix x[j:i] end?
+            prev_suffix_end = prev_suffix_length - a
+            assert 0 <= prev_suffix_end - 1 <= v.length, (i, j, a, v.length)
+            assert x[v.i + prev_suffix_end - 1] == x[i-1]
+            if prev_suffix_end - 1 == v.length:
+                if x[i] in v.c:
+                    print(i, j, "Outgoing edge exists")
+                    exists = True
                 else:
-                    v, v_i = search(y.suffix_link, x, j + y_d, i, i)
-                    v = y.suffix_link
-                    v_i = y_d
-        v = first_suffix_node
-        # v is the path x[j:k].
-        # v is the parent of the path with label x[j:i].
-        # v is either the root (j == k) or it has a suffix link (j < k).
-        assert (v is root or v.suffix_link is not None)
-        if v is root:
-            v = search(root, x, j, i+1)
+                    print(i, j, "Create outgoing edge")
+                    exists = False
+                    v.c[x[i]] = Node(i, None)
+                a += v.length
+                v = v.c[x[i]]
+            else:
+                if x[v.i + prev_suffix_end] == x[i]:
+                    print(i, j, "Next character in current substring")
+                    exists = True
+                    # Leave v unchanged
+                else:
+                    print(i, j, "Split node")
+                    # Split node
+                    exists = False
+                    child = Node(v.i + prev_suffix_end, v.j)
+                    v.j = v.i + prev_suffix_end
+                    child.c = v.c
+                    v.c = {x[v.i + prev_suffix_end]: child,
+                           x[i]: Node(i, None)}
+                    a += v.length
+                    v = v.c[x[i]]
+            suffixes[j] = (v, a)
+            if exists:
+                break
+        suffixes.append((root, 0))
+        root.c.setdefault(x[i], Node(i, None))
+    return root
 
 
-x = 'minimize minime'
+x = 'cacao'
 print('digraph {')
 print('graph [pad="0", ranksep="0.0", nodesep="0.0", splines=line];')
-_print_trie(suffix_trie(x), x)
+_print_trie(suffix_trie_2(x), x)
 print('}')
