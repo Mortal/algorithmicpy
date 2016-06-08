@@ -138,42 +138,59 @@ def suffix_trie_2(x):
     for i in range(len(x) + 1):
         # We have constructed the suffix trie for x[0:i].
         for j, (v, a) in enumerate(suffixes):
+            print("Suffix [%s:%s] " % (j, i) + ''.join(x[j:i]) +
+                  " ends in node %s " % (v,) +
+                  "which is at a distance %s from the root" % a)
             # a is the number of characters on the path from the root
             # to the beginning of the node v.
             prev_suffix_length = i - j
             # Where in x[v.i:v.j] does suffix x[j:i] end?
             prev_suffix_end = prev_suffix_length - a
-            assert 0 <= prev_suffix_end - 1 <= v.length, (i, j, a, v.length)
-            assert x[v.i + prev_suffix_end - 1] == x[i-1]
-            if prev_suffix_end - 1 == v.length:
+            # Note, prev_suffix_end - 1 == v.length means that
+            # the last character in x[j:i] is an edge out of v.
+            # prev_suffix_end == 0 is not allowed.
+            assert 0 < prev_suffix_end <= v.length + 1, (i, j, a, v.length)
+            # Advance (v, a)
+            if prev_suffix_end == v.length + 1:
+                a += v.length
+                next_suffix_end = 2
+                v = v.c[x[i-1]]
+                print("Advance to child", v, "at distance", a)
+            else:
+                assert x[v.i + prev_suffix_end - 1] == x[i-1]
+                next_suffix_end = prev_suffix_end + 1
+
+            assert 0 < next_suffix_end <= v.length + 1
+            if next_suffix_end == v.length + 1:
                 if x[i] in v.c:
                     print(i, j, "Outgoing edge exists")
                     exists = True
                 else:
-                    print(i, j, "Create outgoing edge")
                     exists = False
                     v.c[x[i]] = Node(i, None)
-                a += v.length
-                v = v.c[x[i]]
+                    print(i, j, "Create outgoing edge", v)
             else:
-                if x[v.i + prev_suffix_end] == x[i]:
+                if x[v.i + next_suffix_end - 1] == x[i]:
                     print(i, j, "Next character in current substring")
                     exists = True
                     # Leave v unchanged
                 else:
-                    print(i, j, "Split node")
                     # Split node
+                    print(i, j, "Split node", v)
                     exists = False
                     child = Node(v.i + prev_suffix_end, v.j)
-                    v.j = v.i + prev_suffix_end
+                    v.j = v.i + next_suffix_end - 1
                     child.c = v.c
-                    v.c = {x[v.i + prev_suffix_end]: child,
+                    v.c = {x[v.i + next_suffix_end - 1]: child,
                            x[i]: Node(i, None)}
-                    a += v.length
-                    v = v.c[x[i]]
+                    print("Into", v, child)
+            print("Root is", root, "update", j, "to", v, a)
+            print('  '.join('%s %s' % (v, a) for v, a in suffixes))
+            print(', '.join([str(id(v)) for v, a in suffixes]))
             suffixes[j] = (v, a)
-            if exists:
-                break
+            print(', '.join([str(id(v)) for v, a in suffixes]))
+            # if exists:
+            #     break
         suffixes.append((root, 0))
         root.c.setdefault(x[i], Node(i, None))
     return root
