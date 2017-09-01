@@ -106,3 +106,11 @@ def silhouette(B):
     else:
         m = len(B) // 2
         return merge(silhouette(B[:m]), silhouette(B[m:]))
+
+
+if __name__ == '__main__':
+    for t in range(int(input())):
+        n = int(input())
+        buildings = [list(map(int, input().split()))
+                     for i in range(n)]
+        print(' '.join(map(str, cleanup(silhouette(buildings)))))
