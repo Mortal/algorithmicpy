@@ -272,6 +272,7 @@ class Visitor(VisitorBase):
         return ', '.join(
             Visitor.tex_variable(arg.arg)
             for arg in args.args
+            if not arg.arg.startswith('_')
         )
 
     @staticmethod
