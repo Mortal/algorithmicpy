@@ -1,0 +1,75 @@
+GLOBALS = 'kmeans _bt _print_cluster'.split()
+PATTERNS = [
+    ("n, x = len(x), [None]+list(x)",
+     r"\STATE $#n \gets {}$number of entries in $#x$"),
+    ("[None] * (n+1)",
+     r"\text{array of length $#n$}"),
+    ("[[None] * (m+1) for i in range(n+1)]",
+     r"\text{table of size $#n \times #m$}"),
+    ("(x-y)**z", r"({#x}-{#y})^{#z}"),
+    ("x**y", r"{#x}^{#y}"),
+    ("(x/y)*(z-w)", r"\frac{#x}{#y}(#z-#w)"),
+    ("(x/y)*z", r"\frac{#x}{#y}#z"),
+    ('kmeans(x, K, n)', r'\text{table from \textsc{Kmeans}$(#x, #K)$}'),
+    (r'[result, a, b][_bt]', r'#result'),
+    (r'_print_cluster(x[i:j+1])', r"\text{print ``cluster ${#x}_{#i..#j}$''}"),
+    (r'a or b', r'#a \mathrel{\textbf{or}} #b'),
+]
+
+
+def kmeans(x, K, _bt=0):
+    '''
+    >>> from pprint import pprint
+    >>> dp = kmeans([1, 2, 6, 7], 2, 1)
+    >>> for i in range(4):
+    ...     print(' '.join('%g' % dp[i+1][k+1] for k in range(2)))
+    0 0
+    0.5 0
+    14 0.5
+    26 1
+    '''
+    n, x = len(x), [None]+list(x)
+    y = [None] * (n+1)
+    dp = [[None]*(K+1) for _ in range(n+1)]
+    bt = [[None]*(K+1) for _ in range(n+1)]
+    for i in range(1, n+1):
+        if i == 1:
+            y[i] = x[i]
+        else:
+            y[i] = y[i-1] + x[i]
+    for i in range(1, n+1):
+        for k in range(1, K+1):
+            if k >= i:
+                dp[i][k] = 0
+            elif k == 1:
+                dp[i][k] = 0
+                for j in range(1, i+1):
+                    dp[i][k] = dp[i][k] + (x[j] - (1/i)*y[i])**2
+            else:
+                for j in range(1, i):
+                    v = dp[j][k-1]
+                    for h in range(j+1, i+1):
+                        v = v + (x[h] - (1/(i-j))*(y[i]-y[j]))**2
+                    if j == 1 or v < dp[i][k]:
+                        dp[i][k] = v
+                        bt[i][k] = j
+    return [dp[n][K], dp, bt][_bt]
+
+
+def backtrack(x, K, _print_cluster=print):
+    '''
+    >>> backtrack([1, 2, 6, 7], 2)
+    [6, 7]
+    [1, 2]
+    '''
+    dp = kmeans(x, K, 1)
+    bt = kmeans(x, K, 2)
+    n, x = len(x), [None]+list(x)
+    i = n
+    k = K
+    while k > 1:
+        j = bt[i][k]
+        _print_cluster(x[j+1:i+1])
+        i = j
+        k = k - 1
+    _print_cluster(x[1:i+1])
