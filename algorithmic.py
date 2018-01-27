@@ -226,6 +226,9 @@ class Pattern:
                 return repl(**kwargs)
 
 
+po_x_plus_1 = Pattern.compile('x + 1')
+
+
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         self.pattern_stats = kwargs.pop('pattern_stats', None)
@@ -456,18 +459,22 @@ class Visitor(VisitorBase):
             print(r' = ', end='')
             args = node.iter.args
             if len(args) == 1:
-                print(r'0$ \TO $', end='')
-                self.visit(args[0])
-                print(r' - 1', end='')
+                print('0', end='')
+                i = 0
             else:
                 self.visit(args[0])
-                print(r'$ \TO $', end='')
-                self.visit(args[1])
-                print(r'- 1', end='')
-                if len(args) >= 3:
-                    print(r'\text{skipping $', end='')
-                    self.visit(args[2])
-                    print(r'$}', end='')
+                i = 1
+            print(r'$ \TO $', end='')
+            mo = po_x_plus_1.match(args[i])
+            if mo:
+                self.visit(mo['x'])
+            else:
+                self.visit(args[i])
+                print(r' - 1', end='')
+            if len(args) >= 3:
+                print(r'\text{skipping $', end='')
+                self.visit(args[2])
+                print(r'$}', end='')
             print('$}')
         else:
             print(r'\FOR{$', end='')
