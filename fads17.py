@@ -18,15 +18,22 @@ PATTERNS = [
 
 
 def kmeans(x, K, _bt=0):
-    '''
+    r'''
     >>> from pprint import pprint
-    >>> dp = kmeans([1, 2, 6, 7], 2, 1)
-    >>> for i in range(4):
-    ...     print(' '.join('%g' % dp[i+1][k+1] for k in range(2)))
+    >>> def kmeans_print(x, K):
+    ...     dp = kmeans(x, K, 1)
+    ...     print('\n'.join(' '.join('%g' % v for v in row[1:]) for row in dp[1:]))
+    >>> kmeans_print([1, 2, 6, 7], 2)
     0 0
     0.5 0
     14 0.5
     26 1
+    >>> kmeans_print([1, 2, 6, 7, 21], 3)
+    0 0 0
+    0.5 0 0
+    14 0.5 0
+    26 1 0.5
+    257.2 26 1
     '''
     n, x = len(x), [None]+list(x)
     y = [None] * (n+1)
@@ -59,6 +66,10 @@ def kmeans(x, K, _bt=0):
 def backtrack(x, K, _print_cluster=print):
     '''
     >>> backtrack([1, 2, 6, 7], 2)
+    [6, 7]
+    [1, 2]
+    >>> backtrack([1, 2, 6, 7, 21], 3)
+    [21]
     [6, 7]
     [1, 2]
     '''
