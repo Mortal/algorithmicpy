@@ -1,3 +1,12 @@
+'''
+Solution to the FADS 2017 exam held in January 2018.
+
+To run the embedded unit tests, run `python -m doctest fads17.py`.
+
+To compile into LaTeX, run `python algorithmic.py -c3 fads.py`
+and open `fads.pdf`.
+'''
+
 GLOBALS = 'kmeans _bt _print_cluster'.split()
 PATTERNS = [
     ("n, x = len(x), [None]+list(x)",
