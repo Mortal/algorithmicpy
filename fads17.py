@@ -10,7 +10,7 @@ and open `fads.pdf`.
 GLOBALS = 'kmeans _bt _print_cluster'.split()
 PATTERNS = [
     ("n, x = len(x), [None]+list(x)",
-     r"\STATE $#n \gets {}$number of entries in $#x$"),
+     r"% \STATE $#n \gets {}$number of entries in $#x$"),
     ("[None] * (n+1)",
      r"\text{array of length $#n$}"),
     ("[[None] * (m+1) for i in range(n+1)]",
