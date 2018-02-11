@@ -45,27 +45,27 @@ def kmeans(x, K, _bt=0):
     257.2 26 1
     '''
     n, x = len(x), [None]+list(x)
-    y = [None] * (n+1)
     dp = [[None]*(K+1) for _ in range(n+1)]
     bt = [[None]*(K+1) for _ in range(n+1)]
-    for i in range(1, n+1):
-        if i == 1:
-            y[i] = x[i]
-        else:
-            y[i] = y[i-1] + x[i]
     for i in range(1, n+1):
         for k in range(1, K+1):
             if k >= i:
                 dp[i][k] = 0
             elif k == 1:
                 dp[i][k] = 0
+                s = 0
                 for j in range(1, i+1):
-                    dp[i][k] = dp[i][k] + (x[j] - (1/i)*y[i])**2
+                    s = s + x[j]
+                for j in range(1, i+1):
+                    dp[i][k] = dp[i][k] + (x[j] - (1/i)*s)**2
             else:
                 for j in range(1, i):
                     v = dp[j][k-1]
+                    s = 0
                     for h in range(j+1, i+1):
-                        v = v + (x[h] - (1/(i-j))*(y[i]-y[j]))**2
+                        s = s + x[h]
+                    for h in range(j+1, i+1):
+                        v = v + (x[h] - (1/(i-j))*s)**2
                     if j == 1 or v < dp[i][k]:
                         dp[i][k] = v
                         bt[i][k] = j
