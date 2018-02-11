@@ -20,7 +20,7 @@ PATTERNS = [
     ("(x/y)*(z-w)", r"\frac{#x}{#y}(#z-#w)"),
     ("(x/y)*z", r"\frac{#x}{#y}#z"),
     ('kmeans(x, K, n)', r'\text{table from \textsc{Kmeans}$(#x, #K)$}'),
-    (r'[result, a, b][_bt]', r'#result'),
+    (r'[result, a][_bt]', r'#result'),
     (r'_print_cluster(x[i:j+1])', r"\text{print ``cluster ${#x}_{#i..#j}$''}"),
     (r'a or b', r'#a \mathrel{\textbf{or}} #b'),
 ]
