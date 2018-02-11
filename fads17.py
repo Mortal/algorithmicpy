@@ -46,7 +46,6 @@ def kmeans(x, K, _bt=0):
     '''
     n, x = len(x), [None]+list(x)
     dp = [[None]*(K+1) for _ in range(n+1)]
-    bt = [[None]*(K+1) for _ in range(n+1)]
     for i in range(1, n+1):
         for k in range(1, K+1):
             if k >= i:
@@ -68,8 +67,7 @@ def kmeans(x, K, _bt=0):
                         v = v + (x[h] - (1/(i-j))*s)**2
                     if j == 1 or v < dp[i][k]:
                         dp[i][k] = v
-                        bt[i][k] = j
-    return [dp[n][K], dp, bt][_bt]
+    return [dp[n][K], dp][_bt]
 
 
 def backtrack(x, K, _print_cluster=print):
@@ -83,12 +81,13 @@ def backtrack(x, K, _print_cluster=print):
     [1, 2]
     '''
     dp = kmeans(x, K, 1)
-    bt = kmeans(x, K, 2)
     n, x = len(x), [None]+list(x)
     i = n
     k = K
     while k > 1:
-        j = bt[i][k]
+        j = i - 1
+        while dp[j][k-1] > dp[j+1][k]:
+            j = j - 1
         _print_cluster(x[j+1:i+1])
         i = j
         k = k - 1
