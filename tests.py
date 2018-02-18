@@ -73,6 +73,42 @@ class AlgorithmicpyTest(unittest.TestCase):
     def test_continue(self):
         self.runner('continue', r'\STATE \textbf{continue}')
 
+    def test_for_range_n_plus_1(self):
+        self.runner('for x in range(n + 1): c',
+                    '\\FOR{$x = 0$ \\TO $n$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_range_n(self):
+        self.runner('for x in range(n): c',
+                    '\\FOR{$x = 0$ \\TO $n - 1$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_range_m_n_plus_1(self):
+        self.runner('for x in range(a, n + 1): c',
+                    '\\FOR{$x = a$ \\TO $n$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_range_m_n(self):
+        self.runner('for x in range(a, n): c',
+                    '\\FOR{$x = a$ \\TO $n - 1$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_range_m_n_skip_plus_1(self):
+        self.runner('for x in range(a, n + 1, s): c',
+                    '\\FOR{$x = a$ \\TO $n$ skipping $s$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_range_m_n_skip(self):
+        self.runner('for x in range(a, n, s): c',
+                    '\\FOR{$x = a$ \\TO $n - 1$ skipping $s$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_downto_minus_1(self):
+        self.runner('for x in range(10, n - 1, -1): c',
+                    '\\FOR{$x = 10$ \\DOWNTO $n$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_downto(self):
+        self.runner('for x in range(10, n, -1): c',
+                    '\\FOR{$x = 10$ \\DOWNTO $n + 1$}\n\\STATE $c$\n\\ENDFOR')
+
+    def test_for_in(self):
+        self.runner('for a in b: c',
+                    '\\FOR{$a \\in b$}\n\\STATE $c$\n\\ENDFOR')
+
 
 if __name__ == '__main__':
     unittest.main()

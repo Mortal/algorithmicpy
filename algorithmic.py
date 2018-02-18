@@ -178,6 +178,15 @@ PATTERNS = [
     ("assert v", r"\STATE $\{#v\}$"),
     ("return v", r"\RETURN $#v$"),
     ("continue", r"\STATE \textbf{continue}"),
+    ("for x in range(n + 1): b\n", "\\FOR{$#x = 0$ \\TO $#n$}\n#b\\ENDFOR"),
+    ("for x in range(n): b\n", "\\FOR{$#x = 0$ \\TO $#n - 1$}\n#b\\ENDFOR"),
+    ("for x in range(m, n + 1): b\n", "\\FOR{$#x = #m$ \\TO $#n$}\n#b\\ENDFOR"),
+    ("for x in range(m, n): b\n", "\\FOR{$#x = #m$ \\TO $#n - 1$}\n#b\\ENDFOR"),
+    ("for x in range(m, n - 1, -1): b\n", "\\FOR{$#x = #m$ \\DOWNTO $#n$}\n#b\\ENDFOR"),
+    ("for x in range(m, n, -1): b\n", "\\FOR{$#x = #m$ \\DOWNTO $#n + 1$}\n#b\\ENDFOR"),
+    ("for x in range(m, n + 1, s): b\n", "\\FOR{$#x = #m$ \\TO $#n$ skipping $#s$}\n#b\\ENDFOR"),
+    ("for x in range(m, n, s): b\n", "\\FOR{$#x = #m$ \\TO $#n - 1$ skipping $#s$}\n#b\\ENDFOR"),
+    ("for x in y: b\n", "\\FOR{$#x \\in #y$}\n#b\\ENDFOR"),
 ]
 
 GLOBALS = 'len min max float print set range'.split()
@@ -458,42 +467,6 @@ class Visitor(VisitorBase):
         for child in node.body:
             self.visit(child)
         self.print(r'\ENDWHILE')
-
-    def visit_For(self, node):
-        print = self.print
-        if (isinstance(node.iter, ast.Call) and
-                self.name_eq(node.iter.func, 'range')):
-            print(r'\FOR{$', end='')
-            self.visit(node.target)
-            print(r' = ', end='')
-            args = node.iter.args
-            if len(args) == 1:
-                print('0', end='')
-                i = 0
-            else:
-                self.visit(args[0])
-                i = 1
-            print(r'$ \TO $', end='')
-            mo = po_x_plus_1.match(args[i])
-            if mo:
-                self.visit(mo['x'])
-            else:
-                self.visit(args[i])
-                print(r' - 1', end='')
-            if len(args) >= 3:
-                print(r'\text{skipping $', end='')
-                self.visit(args[2])
-                print(r'$}', end='')
-            print('$}')
-        else:
-            print(r'\FOR{$', end='')
-            self.visit(node.target)
-            print(r'\in', end=' ')
-            self.visit(node.iter)
-            print('$}')
-        for child in node.body:
-            self.visit(child)
-        print(r'\ENDFOR')
 
     ## Expressions
 
