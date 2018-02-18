@@ -16,6 +16,9 @@ class AlgorithmicpyTest(unittest.TestCase):
     def test_assert(self):
         self.runner('assert 42', r'\STATE $\{42\}$')
 
+    def test_return(self):
+        self.runner('return 42', r'\RETURN $42$')
+
 
 if __name__ == '__main__':
     unittest.main()
