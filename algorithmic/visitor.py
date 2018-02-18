@@ -35,6 +35,7 @@ PATTERNS = [
     ("for x in range(m, n + 1, s): b\n", "\\FOR{$#x = #m$ \\TO $#n$ skipping $#s$}\n#b\\ENDFOR"),
     ("for x in range(m, n, s): b\n", "\\FOR{$#x = #m$ \\TO $#n - 1$ skipping $#s$}\n#b\\ENDFOR"),
     ("for x in y: b\n", "\\FOR{$#x \\in #y$}\n#b\\ENDFOR"),
+    ("while True: body\n", "\\LOOP\n#body\\ENDLOOP"),
     ("while cond: body\n", "\\WHILE{$#cond$}\n#body\\ENDWHILE"),
 ]
 
