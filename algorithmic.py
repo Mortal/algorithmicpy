@@ -256,9 +256,6 @@ class Pattern:
                 return repl(**kwargs)
 
 
-po_x_plus_1 = Pattern.compile('x + 1')
-
-
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
         self.pattern_stats = kwargs.pop('pattern_stats', None)
