@@ -109,6 +109,10 @@ class AlgorithmicpyTest(unittest.TestCase):
         self.runner('for a in b: c',
                     '\\FOR{$a \\in b$}\n\\STATE $c$\n\\ENDFOR')
 
+    def test_while(self):
+        self.runner('while n < 1: n = n + 1',
+                    '\\WHILE{$n < 1$}\n\\STATE $n \\gets n + 1$\n\\ENDWHILE')
+
 
 if __name__ == '__main__':
     unittest.main()

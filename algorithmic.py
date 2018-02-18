@@ -187,6 +187,7 @@ PATTERNS = [
     ("for x in range(m, n + 1, s): b\n", "\\FOR{$#x = #m$ \\TO $#n$ skipping $#s$}\n#b\\ENDFOR"),
     ("for x in range(m, n, s): b\n", "\\FOR{$#x = #m$ \\TO $#n - 1$ skipping $#s$}\n#b\\ENDFOR"),
     ("for x in y: b\n", "\\FOR{$#x \\in #y$}\n#b\\ENDFOR"),
+    ("while cond: body\n", "\\WHILE{$#cond$}\n#body\\ENDWHILE"),
 ]
 
 GLOBALS = 'len min max float print set range'.split()
@@ -459,14 +460,6 @@ class Visitor(VisitorBase):
                 for child in node.orelse:
                     self.visit(child)
         self.print(r'\ENDIF')
-
-    def visit_While(self, node):
-        self.print(r'\WHILE{$', end='')
-        self.visit(node.test)
-        self.print('$}')
-        for child in node.body:
-            self.visit(child)
-        self.print(r'\ENDWHILE')
 
     ## Expressions
 
