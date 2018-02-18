@@ -144,8 +144,25 @@ def pattern_match_rec(a, b, unify=None):
             return a_lit == ast.literal_eval(b)
         except ValueError:
             return False
-    return all(pattern_match_rec(getattr(a, f), getattr(b, f), unify)
-               for f in a._fields if f not in {'ctx'})
+    for f in a._fields:
+        if f == 'ctx':
+            continue
+        x = getattr(a, f)
+        y = getattr(b, f)
+        if f == 'body':
+            assert isinstance(x, list)
+            assert isinstance(y, list)
+            assert len(x) >= 1
+            assert len(y) >= 1
+        is_name = (f == 'body' and isinstance(x[0], ast.Expr) and
+                   isinstance(x[0].value, ast.Name))
+        if f == 'body' and unify and is_name:
+            if not unify(x[0].value, y):
+                return False
+        else:
+            if not pattern_match_rec(x, y, unify):
+                return False
+    return True
 
 
 PATTERNS = [

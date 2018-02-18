@@ -11,7 +11,12 @@ class PatternMatchTest(unittest.TestCase):
         self.assertTrue(mo)
         for var, value in matches.items():
             self.assertIn(var, mo.keys())
-            self.assertEqual(value, ast.dump(mo[var], annotate_fields=False))
+            if isinstance(mo[var], list):
+                rep = [ast.dump(v, annotate_fields=False)
+                       for v in mo[var]]
+            else:
+                rep = ast.dump(mo[var], annotate_fields=False)
+            self.assertEqual(value, rep)
         return mo
 
     def negative(self, pattern, text):
@@ -41,6 +46,14 @@ class PatternMatchTest(unittest.TestCase):
     def test_same(self):
         self.positive('a == a == a', 'a == a == a',
                       a="Name('a', Load())")
+
+    def test_for_single(self):
+        self.positive('for a in b: c', 'for i in range(10):\n\t1',
+                      c=["Expr(Num(1))"])
+
+    def test_for_multi(self):
+        self.positive('for a in b: c', 'for i in range(10):\n\t1\n\t2',
+                      c=["Expr(Num(1))", "Expr(Num(2))"])
 
 
 class AlgorithmicpyTest(unittest.TestCase):
