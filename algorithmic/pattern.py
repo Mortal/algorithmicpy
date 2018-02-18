@@ -100,14 +100,15 @@ def pattern_match_rec(a, b, unify=None):
             continue
         x = getattr(a, f)
         y = getattr(b, f)
-        if f == 'body':
-            assert isinstance(x, list)
+        is_block = f == 'body' and isinstance(x, list)
+        if is_block:
+            assert isinstance(x, list), (a, f, x)
             assert isinstance(y, list)
             assert len(x) >= 1
             assert len(y) >= 1
-        is_name = (f == 'body' and isinstance(x[0], ast.Expr) and
+        is_name = (is_block and isinstance(x[0], ast.Expr) and
                    isinstance(x[0].value, ast.Name))
-        if f == 'body' and unify and is_name:
+        if is_block and unify and is_name:
             if not unify(x[0].value, y):
                 return False
         else:
