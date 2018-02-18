@@ -19,6 +19,9 @@ class AlgorithmicpyTest(unittest.TestCase):
     def test_return(self):
         self.runner('return 42', r'\RETURN $42$')
 
+    def test_continue(self):
+        self.runner('continue', r'\STATE \textbf{continue}')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -160,6 +160,7 @@ PATTERNS = [
     ("{}", r"\text{empty dictionary}"),
     ("assert v", r"\STATE $\{#v\}$"),
     ("return v", r"\RETURN $#v$"),
+    ("continue", r"\STATE \textbf{continue}"),
 ]
 
 GLOBALS = 'len min max float print set range'.split()
@@ -476,9 +477,6 @@ class Visitor(VisitorBase):
         for child in node.body:
             self.visit(child)
         print(r'\ENDFOR')
-
-    def visit_Continue(self, node):
-        self.print(r'\STATE \textbf{continue}')
 
     ## Expressions
 
