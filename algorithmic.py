@@ -158,6 +158,7 @@ PATTERNS = [
     ("a.append(b)", r"\text{insert $#b$ at the end of $#a$}"),
     ("print(v)", r"\text{output $#v$}"),
     ("{}", r"\text{empty dictionary}"),
+    ("assert v", r"\STATE $\{#v\}$"),
 ]
 
 GLOBALS = 'len min max float print set range'.split()
@@ -395,11 +396,6 @@ class Visitor(VisitorBase):
             print('$', end='')
             self.visit(node.value)
             print('$')
-
-    def visit_Assert(self, node):
-        self.print(r'\STATE $\{', end='')
-        self.visit(node.test)
-        self.print('\}$')
 
     def visit_Return(self, node):
         self.print(r'\RETURN', end=' ')
