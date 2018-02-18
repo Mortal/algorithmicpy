@@ -2,7 +2,21 @@ import io
 import ast
 import unittest
 import functools
-from algorithmic import Visitor
+from algorithmic import Visitor, pattern_match
+
+
+class PatternMatchTest(unittest.TestCase):
+    def positive(self, pattern, text, **matches):
+        mo = pattern_match(ast.parse(pattern), ast.parse(text))
+        self.assertTrue(mo)
+        for var, value in matches.items():
+            self.assertIn(var, mo.keys())
+            self.assertEqual(value, ast.dump(mo[var], annotate_fields=False))
+        return mo
+
+    def test_basic(self):
+        self.positive('x / 2', '(2+4) / 2',
+                      x="BinOp(Num(2), Add(), Num(4))")
 
 
 class AlgorithmicpyTest(unittest.TestCase):
