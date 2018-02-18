@@ -1,3 +1,4 @@
+# SKIPTEST
 def optimal_bst(p, q):
     n = len(p)
     assert len(q) == n+1

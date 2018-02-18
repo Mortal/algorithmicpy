@@ -1,3 +1,4 @@
+# SKIPTEST
 import curses
 
 import kmp

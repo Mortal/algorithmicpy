@@ -1,8 +1,9 @@
 import io
+import os
 import ast
 import unittest
 import functools
-from algorithmic import Visitor, pattern_match
+from algorithmic import Visitor, pattern_match, main
 
 
 class PatternMatchTest(unittest.TestCase):
@@ -112,6 +113,33 @@ class AlgorithmicpyTest(unittest.TestCase):
     def test_while(self):
         self.runner('while n < 1: n = n + 1',
                     '\\WHILE{$n < 1$}\n\\STATE $n \\gets n + 1$\n\\ENDWHILE')
+
+
+class ExampleTests(unittest.TestCase):
+    def _init():
+        def runner(path):
+            method_name = os.path.splitext(os.path.basename(path))[0]
+            method_name = method_name.replace('-', '_')
+            method_name = 'test_' + method_name
+
+            def method(self):
+                main(['-cp3', path], quiet=True)
+
+            return method_name, method
+
+        path = os.path.join(os.path.dirname(__file__), 'examples')
+        for root, dirs, files in os.walk(path):
+            if '__pycache__' in dirs:
+                dirs.remove('__pycache__')
+            for f in files:
+                if f.endswith('.py'):
+                    path = os.path.join(root, f)
+                    with open(path) as fp:
+                        skip = 'SKIPTEST' in next(fp)
+                    if not skip:
+                        yield runner(path)
+
+    locals().update(_init())
 
 
 if __name__ == '__main__':

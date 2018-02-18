@@ -1,3 +1,4 @@
+# SKIPTEST
 GLOBALS = 'Node'.split()
 PATTERNS = [
     ('Node(i, i)', r'\text{node representing the empty suffix}'),

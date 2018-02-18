@@ -21,13 +21,13 @@ POSTAMBLE = r"""
 """.strip()
 
 
-def main():
+def main(argv=None, quiet=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--output-and-compile', action='store_true')
     parser.add_argument('-p', '--preamble', action='store_true')
     parser.add_argument('-3', '--new-style', action='store_true')
     parser.add_argument('filename', nargs='+')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     output_preamble = args.preamble or args.output_and_compile
     for filename in args.filename:
         with open(filename) as fp:
@@ -48,14 +48,23 @@ def main():
             visitor.print(r'\renewcommand{\gets}{=}')
             visitor.print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
             visitor.print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
-        visitor.visit(o)
+        try:
+            visitor.visit(o)
+        except:
+            if args.output_and_compile:
+                ofp.close()
+            raise
         if output_preamble:
             visitor.print(POSTAMBLE)
         if args.output_and_compile:
             ofp.close()
+            quiet_args = {}
+            if quiet:
+                quiet_args = dict(stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.DEVNULL)
             subprocess.check_call(
                 ('latexmk', '-pdf', output_filename),
-                stdin=subprocess.DEVNULL)
+                stdin=subprocess.DEVNULL, **quiet_args)
 
 
 def pattern_stats():
