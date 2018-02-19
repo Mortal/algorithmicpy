@@ -18,7 +18,7 @@ def node_eq(a, b):
     >>> node_eq(left, right)
     True
     """
-    return bool(pattern_match_rec(a, b))
+    return bool(Matcher(None).generic_visit(a, b))
 
 
 def pattern_match(a, b, globals=None):
@@ -70,51 +70,86 @@ def pattern_match(a, b, globals=None):
             binding = bindings.setdefault(name.id, value)
         return node_eq(binding, value)
 
-    result = pattern_match_rec(a, b, unify)
+    result = Matcher(unify).generic_visit(a, b)
     if result:
         return bindings
 
 
-def pattern_match_rec(a, b, unify=None):
-    if unify and isinstance(a, ast.Name):
-        return unify(a, b)
-    if type(a) != type(b):
-        return False
-    if isinstance(a, (int, str, bool)) or a is None:
-        return a == b
-    if isinstance(a, list):
-        return (len(a) == len(b) and
-                all(pattern_match_rec(c, d, unify) for c, d in zip(a, b)))
-    assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
-    try:
-        a_lit = ast.literal_eval(a)
-    except ValueError:
-        pass
-    else:
-        try:
-            return a_lit == ast.literal_eval(b)
-        except ValueError:
+class Matcher:
+    def __init__(self, unify):
+        self.unify = unify
+
+    def generic_visit(self, a, b):
+        if self.unify and isinstance(a, ast.Name):
+            return self.unify(a, b)
+        if type(a) != type(b):
             return False
-    for f in a._fields:
-        if f == 'ctx':
-            continue
-        x = getattr(a, f)
-        y = getattr(b, f)
-        is_block = f == 'body' and isinstance(x, list)
-        if is_block:
-            assert isinstance(x, list), (a, f, x)
-            assert isinstance(y, list)
-            assert len(x) >= 1
-            assert len(y) >= 1
-        is_name = (is_block and isinstance(x[0], ast.Expr) and
-                   isinstance(x[0].value, ast.Name))
-        if is_block and unify and is_name:
-            if not unify(x[0].value, y):
-                return False
+        if isinstance(a, (int, str, bool)) or a is None:
+            return a == b
+        if isinstance(a, list):
+            return (len(a) == len(b) and
+                    all(self.generic_visit(c, d) for c, d in zip(a, b)))
+        assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
+        try:
+            a_lit = ast.literal_eval(a)
+        except ValueError:
+            pass
         else:
-            if not pattern_match_rec(x, y, unify):
+            try:
+                return a_lit == ast.literal_eval(b)
+            except ValueError:
                 return False
-    return True
+        for f in a._fields:
+            if f == 'ctx':
+                continue
+            x = getattr(a, f)
+            y = getattr(b, f)
+            if not self.field_visit(a.__class__, f, x, y):
+                return False
+        return True
+
+    def field_visit(self, owner, field, a, b):
+        try:
+            method = getattr(self, 'visit_%s_%s' % (owner.__name__, field))
+        except AttributeError:
+            method = self.generic_visit
+        return method(a, b)
+
+    def stmt_list_visit(self, x, y):
+        assert isinstance(x, list)
+        assert isinstance(y, list)
+        assert len(x) >= 1
+        assert len(y) >= 1
+        is_name = (isinstance(x[0], ast.Expr) and
+                   isinstance(x[0].value, ast.Name))
+        if is_name and self.unify:
+            return self.unify(x[0].value, y)
+        else:
+            return self.generic_visit(x, y)
+
+    visit_For_body = visit_While_body = visit_If_body = stmt_list_visit
+
+    def expr_list_visit(self, x, y):
+        assert isinstance(x, list)
+        assert isinstance(y, list)
+        if not self.unify:
+            return self.generic_visit(x, y)
+        starred_idx = [i for i, e in enumerate(x)
+                       if isinstance(e, ast.Starred) and
+                       isinstance(e.value, ast.Name)]
+        if len(starred_idx) == 0:
+            return self.generic_visit(x, y)
+        if len(starred_idx) > 1:
+            raise NotImplementedError('Multiple starred exprs')
+        if len(x) - len(starred_idx) > len(y):
+            return False
+        i, = starred_idx
+        match_len = len(y) - len(x) + 1
+        return (self.generic_visit(x[:i], y[:i]) and
+                self.unify(x[i].value, y[i:i+match_len]) and
+                self.generic_visit(x[i+1:], y[i+match_len:]))
+
+    visit_List_elts = visit_Call_args = expr_list_visit
 
 
 def _str_sub(repl, expr, matches, print, visit):

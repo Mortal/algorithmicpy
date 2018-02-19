@@ -56,6 +56,25 @@ class PatternMatchTest(unittest.TestCase):
         self.positive('for a in b: c', 'for i in range(10):\n\t1\n\t2',
                       c=["Expr(Num(1))", "Expr(Num(2))"])
 
+    def test_list_star_1(self):
+        self.positive('[*c]', '[1, 2]',
+                      c=["Num(1)", "Num(2)"])
+
+    def test_list_star_2(self):
+        self.positive('[x, *c]', '[1, 2]',
+                      c=["Num(2)"])
+
+    def test_list_star_3(self):
+        self.positive('[*c, x]', '[1, 2]',
+                      c=["Num(1)"])
+
+    def test_list_star_4(self):
+        self.positive('[x, *c, y]', '[1, 2]',
+                      c=[])
+
+    def test_call_args_star(self):
+        self.positive('print(*x)', 'print(1, 2)')
+
 
 class AlgorithmicpyTest(unittest.TestCase):
     def runner(self, py, tex):
