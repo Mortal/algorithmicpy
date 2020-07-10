@@ -21,21 +21,18 @@ def optimal_bst(p, q):
     return e, root
 
 
+def format_cell(v):
+    if isinstance(v, str):
+        return v.ljust(4)
+    if isinstance(v, float):
+        return "%4.2f" % v
+    return str(v)
+
+
 def print_matrix(m):
-    print(
-        "\n".join(
-            " ".join(
-                v.ljust(4)
-                if isinstance(v, str)
-                else "%4.2f" % v
-                if isinstance(v, float)
-                else str(v)
-                for v in row
-            )
-            for row in m
-        )
-        + "\n-----"
-    )
+    for row in m:
+        print(" ".join(format_cell(v) for v in row))
+    print("-----")
 
 
 e, root = optimal_bst(
