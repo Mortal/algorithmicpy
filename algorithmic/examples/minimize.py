@@ -236,17 +236,10 @@ def _print_machine(M):
     for q in sorted(Q):
         init = "I" if q == q0 else " "
         acc = "A" if q in A else " "
-        print(
-            "%s%s %s %s"
-            % (
-                init,
-                acc,
-                q,
-                " ".join(
-                    "%s-> %s" % (sigma, delta[q, sigma]) for sigma in sorted(Sigma)
-                ),
-            )
+        edges = " ".join(
+            "%s-> %s" % (sigma, delta[q, sigma]) for sigma in sorted(Sigma)
         )
+        print("%s%s %s %s" % (init, acc, q, edges))
 
 
 def _print_nfa(M):
@@ -254,19 +247,12 @@ def _print_nfa(M):
     for q in sorted(Q):
         init = "I" if q == q0 else " "
         acc = "A" if q in A else " "
-        print(
-            "%s%s %s %s"
-            % (
-                init,
-                acc,
-                q,
-                " ".join(
-                    "%s-> %s" % (sigma, r)
-                    for sigma in sorted(Sigma) + [""]
-                    for r in delta.get((q, sigma), [])
-                ),
-            )
+        edges = " ".join(
+            "%s-> %s" % (sigma, r)
+            for sigma in sorted(Sigma) + [""]
+            for r in delta.get((q, sigma), [])
         )
+        print("%s%s %s %s" % (init, acc, q, edges))
 
 
 def _parse(s, empty, c, all, any, rep):
