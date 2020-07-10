@@ -1,6 +1,6 @@
-GLOBALS = 'inf'.split()
+GLOBALS = "inf".split()
 PATTERNS = [
-    ('inf', r'\infty'),
+    ("inf", r"\infty"),
     ("a[:i]", r"#a[0\dots #i)"),
     ("a[i:]", r"#a[#i \dots \text{end})"),
     ("a[-1]", r"#a[\text{end}]"),
@@ -9,13 +9,13 @@ PATTERNS = [
     ("a[0:1] = []", r"\STATE remove first element of $#a$"),
     ("a[-1:] = []", r"\STATE remove last element of $#a$"),
     ("a[-2:] = []", r"\STATE remove last two elements of $#a$"),
-    ("a.extend([b[-1]])",
-     r"\text{insert the last element of $#b$ at the end of $#a$}"),
+    ("a.extend([b[-1]])", r"\text{insert the last element of $#b$ at the end of $#a$}"),
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
 ]
 
 
-inf = float('inf')
+inf = float("inf")
+
 
 def insert(S, b):
     """
@@ -35,17 +35,18 @@ def insert(S, b):
     while S[i] < l:
         i += 2
     if l < S[i]:
-        S[i:i] = [l, S[i-1]]
-    while S[i+2] < r:
-        S[i+1] = max(S[i+1], h)
+        S[i:i] = [l, S[i - 1]]
+    while S[i + 2] < r:
+        S[i + 1] = max(S[i + 1], h)
         i += 2
-    if r < S[i+2]:
-        S[i+2:i+2] = [r, S[i+1]]
-    S[i+1] = max(S[i+1], h)
+    if r < S[i + 2]:
+        S[i + 2 : i + 2] = [r, S[i + 1]]
+    S[i + 1] = max(S[i + 1], h)
 
     S[0:1] = []
     S[-2:] = []
     return S
+
 
 def merge(A, B):
     """
@@ -67,27 +68,29 @@ def merge(A, B):
     j = 1
     while A[i] != +inf or B[j] != +inf:
         if A[i] < B[j]:
-            S.extend([A[i], max(A[i+1], B[j-1])])
+            S.extend([A[i], max(A[i + 1], B[j - 1])])
             i += 2
         elif B[j] < A[i]:
-            S.extend([B[j], max(A[i-1], B[j+1])])
+            S.extend([B[j], max(A[i - 1], B[j + 1])])
             j += 2
         elif A[i] == B[j]:
-            S.extend([B[j], max(A[i+1], B[j+1])])
+            S.extend([B[j], max(A[i + 1], B[j + 1])])
             i += 2
             j += 2
     S[-1:] = []
     return S
 
+
 def cleanup(S):
     R = S[:2]
     i = 2
     while i < len(S) - 1:
-        if S[i+1] != R[-1]:
-            R.extend([S[i], S[i+1]])
+        if S[i + 1] != R[-1]:
+            R.extend([S[i], S[i + 1]])
         i += 2
     R.extend([S[-1]])
     return R
+
 
 def silhouette(B):
     """
@@ -108,9 +111,8 @@ def silhouette(B):
         return merge(silhouette(B[:m]), silhouette(B[m:]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for t in range(int(input())):
         n = int(input())
-        buildings = [list(map(int, input().split()))
-                     for i in range(n)]
-        print(' '.join(map(str, cleanup(silhouette(buildings)))))
+        buildings = [list(map(int, input().split())) for i in range(n)]
+        print(" ".join(map(str, cleanup(silhouette(buildings)))))

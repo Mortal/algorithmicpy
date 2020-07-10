@@ -4,14 +4,9 @@ import sys
 from .pattern import Pattern
 
 
-GLOBALS = 'len min max float print set range'.split()
+GLOBALS = "len min max float print set range".split()
 
-VARS = {
-    'sigma': r'\sigma ',
-    'Sigma': r'\Sigma ',
-    'delta': r'\delta ',
-    'pi': r'\pi ',
-}
+VARS = {"sigma": r"\sigma ", "Sigma": r"\Sigma ", "delta": r"\delta ", "pi": r"\pi "}
 
 PATTERNS = [
     ("float('inf')", r"\infty"),
@@ -32,8 +27,14 @@ PATTERNS = [
     ("for x in range(m, n): b\n", "\\FOR{$#x = #m$ \\TO $#n - 1$}\n#b\\ENDFOR"),
     ("for x in range(m, n - 1, -1): b\n", "\\FOR{$#x = #m$ \\DOWNTO $#n$}\n#b\\ENDFOR"),
     ("for x in range(m, n, -1): b\n", "\\FOR{$#x = #m$ \\DOWNTO $#n + 1$}\n#b\\ENDFOR"),
-    ("for x in range(m, n + 1, s): b\n", "\\FOR{$#x = #m$ \\TO $#n$ skipping $#s$}\n#b\\ENDFOR"),
-    ("for x in range(m, n, s): b\n", "\\FOR{$#x = #m$ \\TO $#n - 1$ skipping $#s$}\n#b\\ENDFOR"),
+    (
+        "for x in range(m, n + 1, s): b\n",
+        "\\FOR{$#x = #m$ \\TO $#n$ skipping $#s$}\n#b\\ENDFOR",
+    ),
+    (
+        "for x in range(m, n, s): b\n",
+        "\\FOR{$#x = #m$ \\TO $#n - 1$ skipping $#s$}\n#b\\ENDFOR",
+    ),
     ("for x in y: b\n", "\\FOR{$#x \\in #y$}\n#b\\ENDFOR"),
     ("while True: body\n", "\\LOOP\n#body\\ENDLOOP"),
     ("while cond: body\n", "\\WHILE{$#cond$}\n#body\\ENDWHILE"),
@@ -44,7 +45,7 @@ class VisitorBase(ast.NodeVisitor):
     dump_unhandled = False
 
     def __init__(self, source):
-        self._source_lines = source.split('\n')
+        self._source_lines = source.split("\n")
         self.unhandled = set()
 
     def visit(self, node):
@@ -64,10 +65,10 @@ class VisitorBase(ast.NodeVisitor):
             col_offset = node.col_offset
         except AttributeError:
             lineno = col_offset = None
-        print('At node %s' % node, file=file)
+        print("At node %s" % node, file=file)
         if lineno is not None and lineno > 0:
             print(self._source_lines[lineno - 1], file=file)
-            print(' ' * col_offset + '^', file=file)
+            print(" " * col_offset + "^", file=file)
 
     def generic_visit(self, node):
         if self.dump_unhandled and type(node) not in self.unhandled:
@@ -85,8 +86,8 @@ class VisitorBase(ast.NodeVisitor):
 
 class Visitor(VisitorBase):
     def __init__(self, *args, **kwargs):
-        self.pattern_stats = kwargs.pop('pattern_stats', None)
-        self.print = kwargs.pop('print', print)
+        self.pattern_stats = kwargs.pop("pattern_stats", None)
+        self.print = kwargs.pop("print", print)
         super().__init__(*args, **kwargs)
         self.patterns = []
         self.globals = frozenset(GLOBALS)
@@ -94,67 +95,66 @@ class Visitor(VisitorBase):
 
     def extend_patterns(self, patterns):
         self.patterns = [
-            (Pattern.compile(k, globals=self.globals), v)
-            for k, v in patterns
+            (Pattern.compile(k, globals=self.globals), v) for k, v in patterns
         ] + self.patterns
 
     @staticmethod
     def tex_function_name(name):
-        tex = name.replace('_', ' ').title().replace(' ', '-')
-        return r'\textsc{%s}' % (tex,)
+        tex = name.replace("_", " ").title().replace(" ", "-")
+        return r"\textsc{%s}" % (tex,)
 
     @staticmethod
     def tex_variable(v):
-        o = re.fullmatch(r'(.*?)(?:_(.)|(\d+))', v)
+        o = re.fullmatch(r"(.*?)(?:_(.)|(\d+))", v)
         if o:
             vv = Visitor.tex_variable(o.group(1))
             if o.group(2):
-                return r'%s_%s' % (vv, o.group(2))
+                return r"%s_%s" % (vv, o.group(2))
             else:
-                return r'%s_{%s}' % (vv, o.group(3))
-        if v.endswith('_prime'):
+                return r"%s_{%s}" % (vv, o.group(3))
+        if v.endswith("_prime"):
             return "%s'" % Visitor.tex_variable(v[:-6])
         if len(v) == 1:
             return v
-        elif '_' in v:
+        elif "_" in v:
             return Visitor.tex_function_name(v)
         else:
             try:
                 return VARS[v]
             except KeyError:
-                return r'\textit{%s}' % v
+                return r"\textit{%s}" % v
 
     @staticmethod
     def tex_arguments(args):
-        return ', '.join(
+        return ", ".join(
             Visitor.tex_variable(arg.arg)
             for arg in args.args
-            if not arg.arg.startswith('_')
+            if not arg.arg.startswith("_")
         )
 
     @staticmethod
     def operator(operator):
         ops = {
-            ast.Mult: '*',
-            ast.Add: '+',
-            ast.UAdd: '{+}',
-            ast.Sub: '-',
-            ast.Div: '/',
-            ast.FloorDiv: '//',
-            ast.Mod: r'\bmod',
-            ast.USub: '{-}',
-            ast.NotEq: r'\ne',
-            ast.Eq: r'\eq',
-            ast.Lt: '<',
-            ast.Gt: '>',
-            ast.LtE: r'\leq',
-            ast.GtE: r'\geq',
-            ast.And: r'\land',
-            ast.Or: r'\lor',
-            ast.Not: r'\text{not }',
-            ast.In: r'\in',
-            ast.NotIn: r'\not\in',
-            ast.BitOr: r'\cup',
+            ast.Mult: "*",
+            ast.Add: "+",
+            ast.UAdd: "{+}",
+            ast.Sub: "-",
+            ast.Div: "/",
+            ast.FloorDiv: "//",
+            ast.Mod: r"\bmod",
+            ast.USub: "{-}",
+            ast.NotEq: r"\ne",
+            ast.Eq: r"\eq",
+            ast.Lt: "<",
+            ast.Gt: ">",
+            ast.LtE: r"\leq",
+            ast.GtE: r"\geq",
+            ast.And: r"\land",
+            ast.Or: r"\lor",
+            ast.Not: r"\text{not }",
+            ast.In: r"\in",
+            ast.NotIn: r"\not\in",
+            ast.BitOr: r"\cup",
         }
         return ops[type(operator)]
 
@@ -164,10 +164,7 @@ class Visitor(VisitorBase):
             return
         if not all(isinstance(child, ast.List) for child in node.elts):
             return
-        rows = [
-            child.elts
-            for child in node.elts
-        ]
+        rows = [child.elts for child in node.elts]
         if any(len(row) != len(rows[0]) for row in rows):
             return
         else:
@@ -197,18 +194,18 @@ class Visitor(VisitorBase):
 
     def visit_Module(self, node):
         print = self.print
-        print(r'\providecommand{\eq}{=}')
-        print(r'\providecommand{\emptystring}{\text{empty string}}')
-        po_pattern = Pattern.compile('PATTERNS = p', globals={'PATTERNS'})
-        po_globals = Pattern.compile('GLOBALS = s.split()', globals={'GLOBALS'})
+        print(r"\providecommand{\eq}{=}")
+        print(r"\providecommand{\emptystring}{\text{empty string}}")
+        po_pattern = Pattern.compile("PATTERNS = p", globals={"PATTERNS"})
+        po_globals = Pattern.compile("GLOBALS = s.split()", globals={"GLOBALS"})
         for child in node.body:
             if isinstance(child, ast.FunctionDef):
                 self.visit(child)
             elif po_pattern.match(child):
-                p = ast.literal_eval(po_pattern.match(child)['p'])
+                p = ast.literal_eval(po_pattern.match(child)["p"])
                 self.extend_patterns(p)
             elif po_globals.match(child):
-                s = ast.literal_eval(po_globals.match(child)['s']).split()
+                s = ast.literal_eval(po_globals.match(child)["s"]).split()
                 self.globals = self.globals | frozenset(s)
             # else:
             #     print(r'\begin{algorithmic}[1]')
@@ -220,20 +217,21 @@ class Visitor(VisitorBase):
                 print("%% %s" % (n,))
 
     def visit_FunctionDef(self, node):
-        if node.name.startswith('_'):
+        if node.name.startswith("_"):
             return
         print = self.print
         print(r"\begin{algorithm}")
-        print(r"\caption{$%s(%s)$}" %
-              (self.tex_function_name(node.name),
-               self.tex_arguments(node.args)))
-        print(r'\begin{algorithmic}[1]')
+        print(
+            r"\caption{$%s(%s)$}"
+            % (self.tex_function_name(node.name), self.tex_arguments(node.args))
+        )
+        print(r"\begin{algorithmic}[1]")
         for i, child in enumerate(node.body):
             if i == 0 and self.is_docstring(child):
                 continue
             self.visit(child)
-        print(r'\end{algorithmic}')
-        print(r'\end{algorithm}')
+        print(r"\end{algorithmic}")
+        print(r"\end{algorithm}")
 
     def is_docstring(self, node):
         return type(node) == ast.Expr and type(node.value) == ast.Str
@@ -242,139 +240,141 @@ class Visitor(VisitorBase):
 
     def visit_Expr(self, node):
         print = self.print
-        print(r'\STATE', end=' ')
+        print(r"\STATE", end=" ")
         if isinstance(node.value, ast.Str):
             print(node.value.s)
         else:
-            print('$', end='')
+            print("$", end="")
             self.visit(node.value)
-            print('$')
+            print("$")
 
     def visit_Assign(self, node):
         print = self.print
-        print(r'\STATE $', end='')
+        print(r"\STATE $", end="")
         for i, arg in enumerate(node.targets):
             if i > 0:
-                print(', ', end='')
+                print(", ", end="")
             self.visit(arg)
-        print(r' \gets ', end='')
+        print(r" \gets ", end="")
         self.visit(node.value)
-        print(r'$')
+        print(r"$")
 
     def visit_AugAssign(self, node):
-        self.print(r'\STATE $', end='')
+        self.print(r"\STATE $", end="")
         self.visit(node.target)
-        self.print(r'\mathbin{{%s}{=}}' % (self.operator(node.op),))
+        self.print(r"\mathbin{{%s}{=}}" % (self.operator(node.op),))
         self.visit(node.value)
-        self.print('$')
+        self.print("$")
 
-    def visit_If(self, node, macro='IF'):
-        self.print(r'\%s{$' % macro, end='')
+    def visit_If(self, node, macro="IF"):
+        self.print(r"\%s{$" % macro, end="")
         self.visit(node.test)
-        self.print('$}')
+        self.print("$}")
         for child in node.body:
             self.visit(child)
         if node.orelse:
             if len(node.orelse) == 1 and type(node.orelse[0]) == type(node):
-                self.visit_If(node.orelse[0], macro='ELSIF')
+                self.visit_If(node.orelse[0], macro="ELSIF")
                 # Recursion prints ENDIF; return here
                 return
             else:
-                self.print(r'\ELSE')
+                self.print(r"\ELSE")
                 for child in node.orelse:
                     self.visit(child)
-        self.print(r'\ENDIF')
+        self.print(r"\ENDIF")
 
     ## Expressions
 
     def visit_Name(self, node):
-        self.print(self.tex_variable(node.id), end='')
+        self.print(self.tex_variable(node.id), end="")
 
     def visit_Num(self, node):
-        self.print(node.n, end='')
+        self.print(node.n, end="")
 
     def visit_Str(self, node):
         if node.s:
-            self.print("\\verb+%s+" % node.s, end='')
+            self.print("\\verb+%s+" % node.s, end="")
         else:
-            self.print("\\emptystring ", end='')
+            self.print("\\emptystring ", end="")
 
     def visit_Attribute(self, node):
         self.visit(node.value)
-        self.print('.', end=' ')
-        self.print(self.tex_variable(node.attr), end=' ')
+        self.print(".", end=" ")
+        self.print(self.tex_variable(node.attr), end=" ")
 
     def visit_Call(self, node):
         self.visit(node.func)
         if node.args:
-            self.print('(', end='')
+            self.print("(", end="")
             for i, arg in enumerate(node.args):
                 if i > 0:
-                    self.print(',', end=' ')
+                    self.print(",", end=" ")
                 self.visit(arg)
-            self.print(')', end='')
+            self.print(")", end="")
         else:
-            self.print('()')
+            self.print("()")
 
     def visit_Compare(self, node):
         self.visit(node.left)
         for op, right in zip(node.ops, node.comparators):
-            self.print(' %s ' % (self.operator(op),), end='')
+            self.print(" %s " % (self.operator(op),), end="")
             self.visit(right)
 
     def visit_BinOp(self, node):
         self.visit(node.left)
-        self.print(' %s ' % (self.operator(node.op),), end='')
+        self.print(" %s " % (self.operator(node.op),), end="")
         self.visit(node.right)
 
     def visit_BoolOp(self, node):
         self.visit(node.values[0])
         for v in node.values[1:]:
-            self.print(self.operator(node.op), end=' ')
+            self.print(self.operator(node.op), end=" ")
             self.visit(v)
 
     def visit_UnaryOp(self, node):
-        self.print(self.operator(node.op), end='')
+        self.print(self.operator(node.op), end="")
         self.visit(node.operand)
 
     def visit_List(self, node):
         matrix = self.matrix_entries(node)
         if matrix:
-            self.print(r'\begin{pmatrix}')
+            self.print(r"\begin{pmatrix}")
             for row in matrix:
                 for j, cell in enumerate(row):
                     if j > 0:
-                        self.print('&', end=' ')
+                        self.print("&", end=" ")
                     if isinstance(cell, ast.Num):
-                        self.print(r'\phantom{-}', end='')
+                        self.print(r"\phantom{-}", end="")
                     self.visit(cell)
-                self.print(r'\\')
-            self.print(r'\end{pmatrix}')
+                self.print(r"\\")
+            self.print(r"\end{pmatrix}")
         else:
-            self.visit_Tuple(node, r'\langle ', r'\rangle ')
+            self.visit_Tuple(node, r"\langle ", r"\rangle ")
 
     def visit_Set(self, node):
-        self.visit_Tuple(node, r'\{', r'\}')
+        self.visit_Tuple(node, r"\{", r"\}")
 
-    def visit_Tuple(self, node, left='(', right=')'):
-        self.print(left, end='')
+    def visit_Tuple(self, node, left="(", right=")"):
+        self.print(left, end="")
         for i, child in enumerate(node.elts):
             if i > 0:
-                self.print(',', end=' ')
+                self.print(",", end=" ")
             self.visit(child)
-        self.print(right, end='')
+        self.print(right, end="")
 
     def visit_Subscript(self, node):
         self.visit(node.value)
-        self.print('[', end='')
-        if isinstance(node.slice, ast.Index) and isinstance(node.slice.value, ast.Tuple):
+        self.print("[", end="")
+        if isinstance(node.slice, ast.Index) and isinstance(
+            node.slice.value, ast.Tuple
+        ):
             for i, child in enumerate(node.slice.value.elts):
                 if i > 0:
-                    self.print(',', end=' ')
+                    self.print(",", end=" ")
                 self.visit(child)
         else:
             self.visit(node.slice)
-        self.print(']', end='')
+        self.print("]", end="")
 
     def visit_Index(self, node):
         self.visit(node.value)

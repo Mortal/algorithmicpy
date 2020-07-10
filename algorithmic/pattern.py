@@ -87,8 +87,9 @@ class Matcher:
         if isinstance(a, (int, str, bool)) or a is None:
             return a == b
         if isinstance(a, list):
-            return (len(a) == len(b) and
-                    all(self.generic_visit(c, d) for c, d in zip(a, b)))
+            return len(a) == len(b) and all(
+                self.generic_visit(c, d) for c, d in zip(a, b)
+            )
         assert isinstance(a, ast.AST) and isinstance(b, ast.AST)
         try:
             a_lit = ast.literal_eval(a)
@@ -100,7 +101,7 @@ class Matcher:
             except ValueError:
                 return False
         for f in a._fields:
-            if f == 'ctx':
+            if f == "ctx":
                 continue
             x = getattr(a, f)
             y = getattr(b, f)
@@ -110,7 +111,7 @@ class Matcher:
 
     def field_visit(self, owner, field, a, b):
         try:
-            method = getattr(self, 'visit_%s_%s' % (owner.__name__, field))
+            method = getattr(self, "visit_%s_%s" % (owner.__name__, field))
         except AttributeError:
             method = self.generic_visit
         return method(a, b)
@@ -120,8 +121,7 @@ class Matcher:
         assert isinstance(y, list)
         assert len(x) >= 1
         assert len(y) >= 1
-        is_name = (isinstance(x[0], ast.Expr) and
-                   isinstance(x[0].value, ast.Name))
+        is_name = isinstance(x[0], ast.Expr) and isinstance(x[0].value, ast.Name)
         if is_name and self.unify:
             return self.unify(x[0].value, y)
         else:
@@ -134,37 +134,41 @@ class Matcher:
         assert isinstance(y, list)
         if not self.unify:
             return self.generic_visit(x, y)
-        starred_idx = [i for i, e in enumerate(x)
-                       if isinstance(e, ast.Starred) and
-                       isinstance(e.value, ast.Name)]
+        starred_idx = [
+            i
+            for i, e in enumerate(x)
+            if isinstance(e, ast.Starred) and isinstance(e.value, ast.Name)
+        ]
         if len(starred_idx) == 0:
             return self.generic_visit(x, y)
         if len(starred_idx) > 1:
-            raise NotImplementedError('Multiple starred exprs')
+            raise NotImplementedError("Multiple starred exprs")
         if len(x) - len(starred_idx) > len(y):
             return False
         i, = starred_idx
         match_len = len(y) - len(x) + 1
-        return (self.generic_visit(x[:i], y[:i]) and
-                self.unify(x[i].value, y[i:i+match_len]) and
-                self.generic_visit(x[i+1:], y[i+match_len:]))
+        return (
+            self.generic_visit(x[:i], y[:i])
+            and self.unify(x[i].value, y[i : i + match_len])
+            and self.generic_visit(x[i + 1 :], y[i + match_len :])
+        )
 
     visit_List_elts = visit_Call_args = expr_list_visit
 
 
 def _str_sub(repl, expr, matches, print, visit):
     i = 0
-    for mo in re.finditer('#(\w+)', repl):
+    for mo in re.finditer("#(\w+)", repl):
         j = mo.start(0)
         if i != j:
-            print(repl[i:j], end='')
+            print(repl[i:j], end="")
         i = mo.end(0)
         visit(matches[mo.group(1)])
     j = len(repl)
     if i != j:
-        print(repl[i:j], end='')
+        print(repl[i:j], end="")
     if not expr:
-        print('')
+        print("")
     return True
 
 
@@ -179,7 +183,7 @@ class Pattern:
 
     @classmethod
     def compile(cls, pattern, *, globals=None):
-        node = ast.parse(pattern, mode='single').body[0]
+        node = ast.parse(pattern, mode="single").body[0]
         if isinstance(node, ast.Expr):
             node = node.value
             is_expr = True
@@ -191,10 +195,9 @@ class Pattern:
 
     def __repr__(self):
         if self.source is not None:
-            return ('Pattern.compile(%r, globals=%r)' %
-                    (self.source, self.globals))
+            return "Pattern.compile(%r, globals=%r)" % (self.source, self.globals)
         else:
-            return '<Pattern>'
+            return "<Pattern>"
 
     def match(self, target):
         return pattern_match(self.node, target, globals=self.globals)

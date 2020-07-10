@@ -23,20 +23,20 @@ POSTAMBLE = r"""
 
 def main(argv=None, quiet=False):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--output-and-compile', action='store_true')
-    parser.add_argument('-p', '--preamble', action='store_true')
-    parser.add_argument('-3', '--new-style', action='store_true')
-    parser.add_argument('filename', nargs='+')
+    parser.add_argument("-c", "--output-and-compile", action="store_true")
+    parser.add_argument("-p", "--preamble", action="store_true")
+    parser.add_argument("-3", "--new-style", action="store_true")
+    parser.add_argument("filename", nargs="+")
     args = parser.parse_args(argv)
     output_preamble = args.preamble or args.output_and_compile
     for filename in args.filename:
         with open(filename) as fp:
             source = fp.read()
-        o = ast.parse(source, filename, 'exec')
+        o = ast.parse(source, filename, "exec")
         if args.output_and_compile:
             base, ext = os.path.splitext(filename)
-            output_filename = base + '.tex'
-            ofp = open(output_filename, 'w')
+            output_filename = base + ".tex"
+            ofp = open(output_filename, "w")
             out_print = functools.partial(print, file=ofp)
         else:
             out_print = print
@@ -44,10 +44,10 @@ def main(argv=None, quiet=False):
         if output_preamble:
             visitor.print(PREAMBLE)
         if args.new_style:
-            visitor.print(r'\newcommand{\eq}{==}')
-            visitor.print(r'\renewcommand{\gets}{=}')
-            visitor.print(r'\renewcommand{\land}{\mathbin{\text{and}}}')
-            visitor.print(r'\renewcommand{\lor}{\mathbin{\text{or}}}')
+            visitor.print(r"\newcommand{\eq}{==}")
+            visitor.print(r"\renewcommand{\gets}{=}")
+            visitor.print(r"\renewcommand{\land}{\mathbin{\text{and}}}")
+            visitor.print(r"\renewcommand{\lor}{\mathbin{\text{or}}}")
         try:
             visitor.visit(o)
         except:
@@ -60,16 +60,17 @@ def main(argv=None, quiet=False):
             ofp.close()
             quiet_args = {}
             if quiet:
-                quiet_args = dict(stdout=subprocess.DEVNULL,
-                                  stderr=subprocess.DEVNULL)
+                quiet_args = dict(stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             subprocess.check_call(
-                ('latexmk', '-pdf', output_filename),
-                stdin=subprocess.DEVNULL, **quiet_args)
+                ("latexmk", "-pdf", output_filename),
+                stdin=subprocess.DEVNULL,
+                **quiet_args
+            )
 
 
 def pattern_stats():
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', nargs='+')
+    parser.add_argument("filename", nargs="+")
     args = parser.parse_args()
 
     def noop(*args, **kwargs):
@@ -80,7 +81,7 @@ def pattern_stats():
     for filename in args.filename:
         with open(filename) as fp:
             source = fp.read()
-        o = ast.parse(source, filename, 'exec')
+        o = ast.parse(source, filename, "exec")
         p = collections.defaultdict(int)
         visitor = Visitor(source, print=noop, pattern_stats=p)
         visitor.visit(o)
@@ -88,4 +89,4 @@ def pattern_stats():
             pattern_usage[i - len(visitor.patterns)].append(filename)
 
     for i, p in enumerate(visitor.patterns):
-        print("%s\t%r" % (','.join(pattern_usage[i - len(visitor.patterns)]), p))
+        print("%s\t%r" % (",".join(pattern_usage[i - len(visitor.patterns)]), p))

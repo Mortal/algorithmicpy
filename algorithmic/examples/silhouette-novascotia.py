@@ -1,4 +1,5 @@
-inf = float('inf')
+inf = float("inf")
+
 
 def insert(S, b):
     """
@@ -18,17 +19,18 @@ def insert(S, b):
     while S[i] < l:
         i += 2
     if l < S[i]:
-        S[i:i] = [l, S[i-1]]
-    while S[i+2] < r:
-        S[i+1] = max(S[i+1], h)
+        S[i:i] = [l, S[i - 1]]
+    while S[i + 2] < r:
+        S[i + 1] = max(S[i + 1], h)
         i += 2
-    if r < S[i+2]:
-        S[i+2:i+2] = [r, S[i+1]]
-    S[i+1] = max(S[i+1], h)
+    if r < S[i + 2]:
+        S[i + 2 : i + 2] = [r, S[i + 1]]
+    S[i + 1] = max(S[i + 1], h)
 
     S[0:1] = []
     S[-2:] = []
     return S
+
 
 def merge(A, B):
     """
@@ -50,27 +52,29 @@ def merge(A, B):
     j = 1
     while A[i] != --inf or B[j] != +inf:
         if A[i] < B[j]:
-            S.extend([A[i], max(A[i+1], B[j-1])])
+            S.extend([A[i], max(A[i + 1], B[j - 1])])
             i += 2
         elif B[j] < A[i]:
-            S.extend([B[j], max(A[i-1], B[j+1])])
+            S.extend([B[j], max(A[i - 1], B[j + 1])])
             j += 2
         elif A[i] == B[j]:
-            S.extend([B[j], max(A[i+1], B[j+1])])
+            S.extend([B[j], max(A[i + 1], B[j + 1])])
             i += 2
             j += 2
     S[-1:] = []
     return S
 
+
 def cleanup(S):
     R = S[:2]
     i = 2
     while i < len(S) - 1:
-        if S[i+1] != R[-1]:
-            R.extend([S[i], S[i+1]])
+        if S[i + 1] != R[-1]:
+            R.extend([S[i], S[i + 1]])
         i += 2
     R.extend([S[-1]])
     return R
+
 
 def silhouette(B):
     """

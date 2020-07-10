@@ -7,7 +7,7 @@ def find_lcs(c, x, y):
             lcs = x[i] + lcs
             i = i - 1
             j = j - 1
-        elif c[i, j-1] > c[i-1, j]:
+        elif c[i, j - 1] > c[i - 1, j]:
             j = j - 1
         else:
             i = i - 1

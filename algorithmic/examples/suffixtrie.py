@@ -1,11 +1,12 @@
 # SKIPTEST
-GLOBALS = 'Node'.split()
+GLOBALS = "Node".split()
 PATTERNS = [
-    ('Node(i, i)', r'\text{node representing the empty suffix}'),
-    ('Node(i, len(x))', r'\text{node representing $#x[#i \ldots end]$}'),
-    ('Node(i, j)', r'\text{node representing $x[#i \ldots #j-1]$}'),
-    ('x = list(x) + [None]', r"\STATE \text{add sentinel character ``\$'' to $#x$}"),
+    ("Node(i, i)", r"\text{node representing the empty suffix}"),
+    ("Node(i, len(x))", r"\text{node representing $#x[#i \ldots end]$}"),
+    ("Node(i, j)", r"\text{node representing $x[#i \ldots #j-1]$}"),
+    ("x = list(x) + [None]", r"\STATE \text{add sentinel character ``\$'' to $#x$}"),
 ]
+
 
 class Node:
     def __init__(self, i, j, c=None):
@@ -20,7 +21,7 @@ class Node:
     @property
     def length(self):
         if self.j is None:
-            return float('inf')
+            return float("inf")
         else:
             return self.j - self.i
 
@@ -30,8 +31,10 @@ class Node:
     def __str__(self):
         if self.c:
             return "(%s, %s, %s)" % (
-                self.i, self.j,
-                ', '.join('%s->%s' % (k, v) for k, v in self.c.items()))
+                self.i,
+                self.j,
+                ", ".join("%s->%s" % (k, v) for k, v in self.c.items()),
+            )
         else:
             return "[%s, %s]" % (self.i, self.j)
 
@@ -90,34 +93,41 @@ def insert(root, x, i):
 
 
 def _node_name(x, n):
-    return '%s,%s' % (_node_label(x, n), ''.join('$' if i == len(x) else x[i] for i in range(n.i, n.j)))
+    return "%s,%s" % (
+        _node_label(x, n),
+        "".join("$" if i == len(x) else x[i] for i in range(n.i, n.j)),
+    )
 
 
 def _node_label(x, n):
     if n.i == n.j:
-        return ''
+        return ""
     else:
-        return '%s,%s' % (n.i, n.j - 1)
+        return "%s,%s" % (n.i, n.j - 1)
 
 
-def _print_trie(root, x, path=''):
+def _print_trie(root, x, path=""):
     # print("VISIT", root)
     # print('RECURSE', ' '.join(map(str, root.c.keys())))
-    print("subgraph \"cluster_%s\" { color=white; " % (path,))
+    print('subgraph "cluster_%s" { color=white; ' % (path,))
     if root.c:
-        shape = 'ellipse'
+        shape = "ellipse"
     else:
-        shape = 'box'
-    print("\"%s%s\" [label=\"%s\", margin=0, shape=%s, fontsize=22];" %
-          (path, _node_name(x, root), _node_label(x, root), shape))
+        shape = "box"
+    print(
+        '"%s%s" [label="%s", margin=0, shape=%s, fontsize=22];'
+        % (path, _node_name(x, root), _node_label(x, root), shape)
+    )
     for k, c in root.c.items():
         # print("RECURSE", k)
-        _print_trie(c, x, path + (k or '$'))
+        _print_trie(c, x, path + (k or "$"))
     # print('EDGE', ' '.join(map(str, root.c.keys())))
     for k, c in root.c.items():
         # print("EDGE", k)
-        print("\"%s%s\" -> \"%s%s%s\" [arrowhead=none];" %
-              (path, _node_name(x, root), path, k or '$', _node_name(x, c)))
+        print(
+            '"%s%s" -> "%s%s%s" [arrowhead=none];'
+            % (path, _node_name(x, root), path, k or "$", _node_name(x, c))
+        )
     print("}")
     # print("DONE", root)
 
@@ -139,9 +149,12 @@ def suffix_trie_2(x):
     for i in range(len(x) + 1):
         # We have constructed the suffix trie for x[0:i].
         for j, (v, a) in enumerate(suffixes):
-            print("Suffix [%s:%s] " % (j, i) + ''.join(x[j:i]) +
-                  " ends in node %s " % (v,) +
-                  "which is at a distance %s from the root" % a)
+            print(
+                "Suffix [%s:%s] " % (j, i)
+                + "".join(x[j:i])
+                + " ends in node %s " % (v,)
+                + "which is at a distance %s from the root" % a
+            )
             # a is the number of characters on the path from the root
             # to the beginning of the node v.
             prev_suffix_length = i - j
@@ -155,10 +168,10 @@ def suffix_trie_2(x):
             if prev_suffix_end == v.length + 1:
                 a += v.length
                 next_suffix_end = 2
-                v = v.c[x[i-1]]
+                v = v.c[x[i - 1]]
                 print("Advance to child", v, "at distance", a)
             else:
-                assert x[v.i + prev_suffix_end - 1] == x[i-1]
+                assert x[v.i + prev_suffix_end - 1] == x[i - 1]
                 next_suffix_end = prev_suffix_end + 1
 
             assert 0 < next_suffix_end <= v.length + 1
@@ -182,14 +195,13 @@ def suffix_trie_2(x):
                     child = Node(v.i + prev_suffix_end, v.j)
                     v.j = v.i + next_suffix_end - 1
                     child.c = v.c
-                    v.c = {x[v.i + next_suffix_end - 1]: child,
-                           x[i]: Node(i, None)}
+                    v.c = {x[v.i + next_suffix_end - 1]: child, x[i]: Node(i, None)}
                     print("Into", v, child)
             print("Root is", root, "update", j, "to", v, a)
-            print('  '.join('%s %s' % (v, a) for v, a in suffixes))
-            print(', '.join([str(id(v)) for v, a in suffixes]))
+            print("  ".join("%s %s" % (v, a) for v, a in suffixes))
+            print(", ".join([str(id(v)) for v, a in suffixes]))
             suffixes[j] = (v, a)
-            print(', '.join([str(id(v)) for v, a in suffixes]))
+            print(", ".join([str(id(v)) for v, a in suffixes]))
             # if exists:
             #     break
         suffixes.append((root, 0))
@@ -197,8 +209,8 @@ def suffix_trie_2(x):
     return root
 
 
-x = 'cacao'
-print('digraph {')
+x = "cacao"
+print("digraph {")
 print('graph [pad="0", ranksep="0.0", nodesep="0.0", splines=line];')
 _print_trie(suffix_trie_2(x), x)
-print('}')
+print("}")

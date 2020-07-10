@@ -1,10 +1,9 @@
-GLOBALS = 'inf'.split()
+GLOBALS = "inf".split()
 PATTERNS = [
-    ('inf', r'\infty'),
+    ("inf", r"\infty"),
     ("a[-1:] = []", r"\STATE remove last element of $#a$"),
     ("a[-1]", r"#a[\text{end}]"),
-    ("[0] * n",
-     r"\text{an array of $#n$ zeros}"),
+    ("[0] * n", r"\text{an array of $#n$ zeros}"),
 ]
 
 
@@ -28,7 +27,7 @@ def lower_bound(L, v):
     return i
 
 
-inf = float('inf')
+inf = float("inf")
 
 
 def lis(x):

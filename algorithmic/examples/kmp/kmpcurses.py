@@ -6,16 +6,13 @@ import kmp
 
 def compute_prefix(s):
     if not s:
-        return ''
+        return ""
     p = kmp.compute_prefix(s)
-    return ''.join(
-        chr(ord('0') + v + 1) if v < 9 else
-        chr(ord('a') + v-9)
-        for v in p)
+    return "".join(chr(ord("0") + v + 1) if v < 9 else chr(ord("a") + v - 9) for v in p)
 
 
 def main(stdscr):
-    a, b = '', ''
+    a, b = "", ""
     while True:
         stdscr.clear()
         stdscr.addstr(0, 0, a + b)
@@ -28,9 +25,9 @@ def main(stdscr):
         elif 32 <= c < 127:
             a += chr(c)
         elif c == 11:  # ^K
-            b = ''
+            b = ""
         elif c == 21:  # ^U
-            a = ''
+            a = ""
         elif c == curses.KEY_LEFT:
             if a:
                 a, b = a[:-1], a[-1] + b
@@ -38,9 +35,9 @@ def main(stdscr):
             if b:
                 a, b = a + b[0], b[1:]
         elif c == curses.KEY_HOME:
-            a, b = '', a + b
+            a, b = "", a + b
         elif c == curses.KEY_END:
-            a, b = a + b, ''
+            a, b = a + b, ""
         else:
             raise SystemExit(a + b)
 

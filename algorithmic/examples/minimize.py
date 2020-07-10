@@ -1,19 +1,19 @@
 import itertools
 
 
-GLOBALS = 'Set'.split()
+GLOBALS = "Set".split()
 PATTERNS = [
-    ('Set()', r'\emptyset '),
-    ('Set(a)', r'\{#a\}'),
-    ('Set(a, b)', r'\{#a, #b\}'),
+    ("Set()", r"\emptyset "),
+    ("Set(a)", r"\{#a\}"),
+    ("Set(a, b)", r"\{#a, #b\}"),
     ("a[0:1] = []", r"\STATE remove first element of $#a$"),
     ("a.extend(b)", r"\text{insert $#b$ at the end of $#a$}"),
     ("True", r"\top "),
     ("False", r"\bot "),
     ("(a and b) or (c and d)", r"(#a \land #b) \lor (#c \land #d)"),
-    ('set()', r'\emptyset '),
-    ('s.add(x)', r'#s = #s \cup \{#x\}'),
-    ('s.union(t)', r'#s \cup #t'),
+    ("set()", r"\emptyset "),
+    ("s.add(x)", r"#s = #s \cup \{#x\}"),
+    ("s.union(t)", r"#s \cup #t"),
 ]
 
 
@@ -219,7 +219,7 @@ def shortest_paths(Q, Sigma, q0, delta, A):
 def shortest_accepted(Q, Sigma, q0, delta, A):
     paths = shortest_paths(Q, Sigma, q0, delta, A)
     x = None
-    n = float('inf')
+    n = float("inf")
     for q in A:
         if len(paths[q]) < n:
             x = paths[q]
@@ -234,24 +234,39 @@ def Set(*args):
 def _print_machine(M):
     Q, Sigma, q0, delta, A = M
     for q in sorted(Q):
-        init = 'I' if q == q0 else ' '
-        acc = 'A' if q in A else ' '
-        print('%s%s %s %s' %
-              (init, acc, q,
-               ' '.join('%s-> %s' % (sigma, delta[q, sigma])
-                        for sigma in sorted(Sigma))))
+        init = "I" if q == q0 else " "
+        acc = "A" if q in A else " "
+        print(
+            "%s%s %s %s"
+            % (
+                init,
+                acc,
+                q,
+                " ".join(
+                    "%s-> %s" % (sigma, delta[q, sigma]) for sigma in sorted(Sigma)
+                ),
+            )
+        )
 
 
 def _print_nfa(M):
     Q, Sigma, q0, delta, A = M
     for q in sorted(Q):
-        init = 'I' if q == q0 else ' '
-        acc = 'A' if q in A else ' '
-        print('%s%s %s %s' %
-              (init, acc, q,
-               ' '.join('%s-> %s' % (sigma, r)
-                        for sigma in sorted(Sigma) + [""]
-                        for r in delta.get((q, sigma), []))))
+        init = "I" if q == q0 else " "
+        acc = "A" if q in A else " "
+        print(
+            "%s%s %s %s"
+            % (
+                init,
+                acc,
+                q,
+                " ".join(
+                    "%s-> %s" % (sigma, r)
+                    for sigma in sorted(Sigma) + [""]
+                    for r in delta.get((q, sigma), [])
+                ),
+            )
+        )
 
 
 def _parse(s, empty, c, all, any, rep):
@@ -273,13 +288,13 @@ def _parse(s, empty, c, all, any, rep):
 
     def peek():
         nonlocal i
-        return '' if i >= len(s) else s[i]
+        return "" if i >= len(s) else s[i]
 
     def take():
         nonlocal i
         c = peek()
         i += 1
-        while i < len(s) and s[i] == ' ':
+        while i < len(s) and s[i] == " ":
             i += 1
         return c
 
@@ -291,7 +306,7 @@ def _parse(s, empty, c, all, any, rep):
         return c.find(peek()) == -1
 
     def peek_char():
-        return peek_notany('()|*')
+        return peek_notany("()|*")
 
     def expect(c):
         if peek() != c:
@@ -299,15 +314,15 @@ def _parse(s, empty, c, all, any, rep):
         take()
 
     def factor():
-        if accept('('):
+        if accept("("):
             r = expression()
-            expect(')')
+            expect(")")
         elif peek_char():
             r = c(take())
         else:
             # Empty string
             return empty()
-        while accept('*'):
+        while accept("*"):
             r = rep(r)
         return r
 
@@ -319,13 +334,13 @@ def _parse(s, empty, c, all, any, rep):
 
     def expression():
         r = [term()]
-        while accept('|'):
+        while accept("|"):
             r.append(term())
         return r[0] if len(r) == 1 else any(r)
 
     def input():
         r = expression()
-        expect('')
+        expect("")
         return r
 
     return input()
@@ -366,6 +381,7 @@ def _parse_nfa(s):
             Sigma.add(c)
             delta[q, c] = [next]
             return q
+
         return r
 
     def all(ms):
@@ -373,14 +389,16 @@ def _parse_nfa(s):
             for m in reversed(ms):
                 next = m(next)
             return next
+
         return r
 
     def any(ms):
         def r(next):
             q = len(Q)
             Q.append(q)
-            delta[q, ''] = [m(next) for m in ms]
+            delta[q, ""] = [m(next) for m in ms]
             return q
+
         return r
 
     def rep(m):
@@ -388,13 +406,17 @@ def _parse_nfa(s):
             q = len(Q)
             Q.append(q)
             p = m(q)
-            delta[q, ''] = [next, p]
+            delta[q, ""] = [next, p]
             return q
+
         return r
 
     q0 = _parse(s, empty, character, all, any, rep)(qa)
-    delta = {(q, sigma): frozenset(delta.get((q, sigma), []))
-             for q in Q for sigma in sorted(Sigma) + ['']}
+    delta = {
+        (q, sigma): frozenset(delta.get((q, sigma), []))
+        for q in Q
+        for sigma in sorted(Sigma) + [""]
+    }
     return Q, Sigma, q0, delta, A
 
 
@@ -407,8 +429,8 @@ def lambda_elimination(Q, Sigma, q0, delta, A):
         while len(next) > 0:
             q = next[0]
             next[0:1] = []
-            if (q, '') in delta:
-                for r in delta[q, '']:
+            if (q, "") in delta:
+                for r in delta[q, ""]:
                     if r not in closure:
                         closure.add(r)
                         next.append(r)
@@ -517,7 +539,8 @@ def _same_test(p1, p2):
     Q2, Sigma2, q2, delta2, A2 = _regex_fa(p2)
     Sigma = set(Sigma1) | set(Sigma2)
     Q, Sigma, q0, delta, A = symmetric_difference(
-        Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2)
+        Sigma, Q1, q1, delta1, A1, Q2, q2, delta2, A2
+    )
     Q, Sigma, q0, delta, A = minimize(Q, Sigma, q0, delta, A)
     if len(A) > 0:
         x = shortest_accepted(Q, Sigma, q0, delta, A)

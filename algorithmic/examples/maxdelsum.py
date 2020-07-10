@@ -1,22 +1,24 @@
 PATTERNS = [
-    ("[[0] * m for i in range(n)]",
-     r"\text{a $#n \times #m$ matrix of zeros}"),
-    ("[0] * n",
-     r"\text{an array of $#n$ zeros}"),
+    ("[[0] * m for i in range(n)]", r"\text{a $#n \times #m$ matrix of zeros}"),
+    ("[0] * n", r"\text{an array of $#n$ zeros}"),
 ]
 
 
-A = [[-9,  5,  7,  7,  3, -9,  3,  2],
-     [ 8, -9,  2,  4,  9, -7,  4,  0],
-     [-2, -1,  6,  9, -3, -9,  9, -9],
-     [ 8, -9,  2,  5, -1,  5,  7,  9],
-     [-3,  9,  7, -1,  6,  7,  3,  5],
-     [-4,  9,  4, -8,  4, -8,  9, -7],
-     [ 9,  8,  6,  1,  3,  3,  1, -5],
-     [-6, -5, -1,  5,  3, -1, -8, -2]]
+A = [
+    [-9, 5, 7, 7, 3, -9, 3, 2],
+    [8, -9, 2, 4, 9, -7, 4, 0],
+    [-2, -1, 6, 9, -3, -9, 9, -9],
+    [8, -9, 2, 5, -1, 5, 7, 9],
+    [-3, 9, 7, -1, 6, 7, 3, 5],
+    [-4, 9, 4, -8, 4, -8, 9, -7],
+    [9, 8, 6, 1, 3, 3, 1, -5],
+    [-6, -5, -1, 5, 3, -1, -8, -2],
+]
+
 
 def zeros(n, m):
     return [[0] * m for i in range(n)]
+
 
 def maxdelsum_kadane(A):
     n = len(A)
@@ -26,6 +28,7 @@ def maxdelsum_kadane(A):
         maxendinghere = max(maxendinghere + A[i], 0)
         maxsofar = max(maxsofar, maxendinghere)
     return maxsofar
+
 
 def maxdelsum_2d(A):
     n = len(A)
@@ -41,5 +44,6 @@ def maxdelsum_2d(A):
             max1d = maxdelsum_kadane(s)
             maxsofar = max(maxsofar, max1d)
     return maxsofar
+
 
 print(maxdelsum_2d(A))
