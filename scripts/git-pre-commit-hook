@@ -1,0 +1,2 @@
+#!/bin/sh
+scripts/git-format-staged -f "black -q -" '*.py'
